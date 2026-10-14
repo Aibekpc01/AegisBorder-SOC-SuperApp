@@ -1,0 +1,15 @@
+.env
+.git
+__pycache__
+*.db
+*.zip
+.venv
+node_modules
+frontend/dist
+frontend/.npm-cache
+backups
+.pytest_cache
+test-results
+playwright-report
+app/web
+*.dump

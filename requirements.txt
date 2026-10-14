@@ -1,0 +1,11 @@
+fastapi>=0.115,<1
+uvicorn[standard]>=0.30,<1
+SQLAlchemy>=2.0,<3
+psycopg2-binary>=2.9,<3
+pydantic>=2.8,<3
+alembic>=1.15,<2
+PyJWT>=2.10,<3
+argon2-cffi>=23.1,<26
+scikit-learn>=1.6,<2
+reportlab>=4.3,<5
+python-dotenv>=1.0,<2

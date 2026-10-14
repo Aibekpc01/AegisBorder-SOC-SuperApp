@@ -1,0 +1,54 @@
+# AegisBorder SOC — Command Center 0.3
+
+Работающее локальное веб-приложение для обнаружения и расследования **синтетических** киберинцидентов. Не подключается к служебной инфраструктуре. Целевой срок демонстрационного релиза — 20 ноября 2026 года.
+
+## Быстрый запуск
+
+Запустите Docker Desktop с Linux-контейнерами. Существующий `.env` сохраняйте. В новой установке заполните значения из `.env.example`: DB_PASSWORD, ADMIN_PASSWORD (≥12 символов), AUDIT_KEY (≥32).
+
+```powershell
+docker compose up --build -d --wait --wait-timeout 240
+docker compose ps
+curl.exe http://127.0.0.1:8000/api/v1/health
+```
+
+Открыть **http://127.0.0.1:8000**. Вход: `admin` и первоначально заданный `ADMIN_PASSWORD`. Для повторных запусков — `Запустить.bat`. Остановка: `Остановить.bat` или `docker compose down`. Флаг `-v` удаляет базу; не используйте его для обычной остановки.
+
+## Что реализовано
+
+- React, TypeScript, Vite, Tailwind, компоненты shadcn/ui на Radix, Lucide, Recharts, React Router и TanStack Query.
+- 14 русскоязычных разделов Command Center, простой и технический режимы.
+- FastAPI, SQLAlchemy, миграции Alembic, PostgreSQL; отдельный SQLite-режим без Docker.
+- Argon2, JWT в HttpOnly-cookie, отзыв сеансов, роли и ограничения доступа API.
+- 15 различных учебных ситуаций, единый обработчик, временные окна, дедупликация и объяснимый риск.
+- Статусы, ответственный, комментарии, доказательства, расследование, история и PDF.
+- Собственные демонстрационные сеансы и пошаговый режим комиссии.
+- HMAC-аудит и WebSocket-уведомления о новых сохранённых данных.
+- Профили с фото и личными полями, приватная история IP-входов и добровольная геолокация браузера.
+- Инструкции под рабочими блоками и настраиваемая политика IP/VPN-доступа; [возможности и ограничения](docs/profiles-and-network-access.md).
+- Отдельный Isolation Forest на явно обозначенном синтетическом профиле, без вымышленных показателей точности.
+
+Генераторы создают события, а результаты рассчитывает сервер. При изменении правил результаты меняются. Состояние учётных записей, правил, инцидентов, расследований, сеансов и отчётов сохраняется в БД.
+
+Прототип v0.2 сохранён в `app/legacy_main.py` и `app/static/index.html`; его таблицы не удалены. Новая версия использует `cc_`. Перед обновлением этой сессии создан `backup-before-command-center.dump`, исключённый из Git.
+
+## Без Docker
+
+```powershell
+python -m venv .venv
+.venv/Scripts/python.exe -m pip install -r requirements.lock-windows.txt
+powershell -NoProfile -File scripts/build_local.ps1
+.venv/Scripts/python.exe scripts/start_local.py
+```
+
+Скрипт читает `.env`; без DATABASE_URL использует `aegisborder_local.db`. Docker и локальный сервер не должны одновременно занимать порт 8000. Для отдельной проверки можно передать `--port 8001`.
+
+## Проверки и документация
+
+Команды — в [docs/testing.md](docs/testing.md), фактические результаты — в [docs/testing-results.md](docs/testing-results.md). Из корневого README используйте ссылки ниже:
+
+- [Архитектура](docs/architecture.md), [спецификация](docs/technical-specification.md), [схема БД](docs/database-schema.md), [API](docs/api.md).
+- [Безопасность](docs/security.md), [руководство сотрудника](docs/user-guide.md), [демонстрация комиссии](docs/demo-guide.md).
+- [Установка Windows](docs/installation-windows.md), [проверки](docs/testing.md), [результаты](docs/testing-results.md), [план релиза](docs/release-checklist.md).
+
+Windows 8/8.1 и чистая установка на других компьютерах пока не подтверждены тестами. Готовность к служебной эксплуатации не заявляется. Перед размещением в изолированной сети необходимы отдельная проверка безопасности, TLS, процедуры резервного восстановления и приёмка.

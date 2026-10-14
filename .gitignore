@@ -1,0 +1,17 @@
+.env
+.venv/
+node_modules/
+frontend/dist/
+__pycache__/
+*.pyc
+*.db
+*.sqlite*
+.pytest_cache/
+.ruff_cache/
+test-results/
+playwright-report/
+backups/
+.npm-cache/
+*.dump
+.playwright/
+app/web/
