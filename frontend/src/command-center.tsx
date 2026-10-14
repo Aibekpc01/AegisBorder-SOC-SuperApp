@@ -22,7 +22,6 @@ import {
   ChevronRight,
   Play,
   CheckCircle2,
-  Radio,
   Download,
   RefreshCw,
   LockKeyhole,
@@ -60,6 +59,7 @@ import { VisualGuide } from "./components/visual-guide";
 import { ThemeToggle } from "./components/theme-toggle";
 import { AppTools, DevelopmentModules } from "./components/app-tools";
 import { appPath, appPage } from "./lib/routes";
+import { Emblem, EmblemPair } from "./components/emblems";
 import "./superapp.css";
 const Workspace = React.lazy(() =>
   import("./components/workspace").then((module) => ({
@@ -365,7 +365,7 @@ export default function App() {
     return (
       <div className="login">
         <div className="login-art">
-          <Shield size={70} />
+          <EmblemPair className="login-emblems" />
           <h1>
             AegisBorder <span>SOC</span>
           </h1>
@@ -447,7 +447,7 @@ export default function App() {
       <aside>
         <NavLink className="brand" to="/app">
           <div className="brand-icon">
-            <Shield size={24} />
+            <Emblem kind="border" />
           </div>
           <div>
             AegisBorder <strong>SuperApp</strong>
@@ -474,7 +474,7 @@ export default function App() {
           ))}
         </nav>
         <div className="sidebar-bottom">
-          <Radio size={16} />
+          <Emblem kind="knb" className="sidebar-knb" />
           <div>
             Учебный контур<small>Только синтетические данные</small>
           </div>
@@ -539,6 +539,9 @@ export default function App() {
                 ОПЕРАТИВНАЯ ОБСТАНОВКА / УЧЕБНЫЙ КОНТУР
               </span>
               <h1>{title}</h1>
+              {page === "commission" && (
+                <EmblemPair className="commission-emblems" />
+              )}
               <p>
                 {page === "commission"
                   ? "Проверьте возможности системы самостоятельно — шаг за шагом."

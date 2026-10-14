@@ -13,12 +13,12 @@ import {
   LockKeyhole,
   Network,
   Play,
-  Shield,
   ShieldCheck,
   Sparkles,
   Usb,
 } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
+import { Emblem, EmblemPair } from "./emblems";
 
 const examples = [
   {
@@ -119,9 +119,7 @@ export function Landing() {
       </a>
       <header className="landing-nav">
         <Link to="/" className="landing-brand">
-          <span>
-            <Shield size={23} />
-          </span>
+          <EmblemPair className="landing-emblems" />
           <b>
             AegisBorder<small>SuperApp / учебный контур</small>
           </b>
@@ -188,7 +186,7 @@ export function Landing() {
             <div className="visual-orbit orbit-one" />
             <div className="visual-orbit orbit-two" />
             <div className="shield-core">
-              <Shield size={84} strokeWidth={1.1} />
+              <Emblem kind="border" className="hero-emblem" />
               <span>AEGIS</span>
               <small>SECURITY CORE</small>
             </div>
@@ -422,7 +420,7 @@ export function Landing() {
       </main>
       <footer className="landing-footer">
         <span>
-          <Shield size={18} /> AegisBorder SuperApp
+          <EmblemPair className="footer-emblems" /> AegisBorder SuperApp
         </span>
         <p>
           Демонстрационный проект. Синтетические данные. Не является официальным
