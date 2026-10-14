@@ -60,6 +60,7 @@ import { ThemeToggle } from "./components/theme-toggle";
 import { AppTools, DevelopmentModules } from "./components/app-tools";
 import { appPath, appPage } from "./lib/routes";
 import { Emblem, EmblemPair } from "./components/emblems";
+import { ModuleMenu } from "./components/module-menu";
 import "./superapp.css";
 const Workspace = React.lazy(() =>
   import("./components/workspace").then((module) => ({
@@ -494,6 +495,7 @@ export default function App() {
               }
             />
             <ThemeToggle />
+            <ModuleMenu compact />
             <span
               className={
                 health.isSuccess ? "system-status" : "system-status offline"

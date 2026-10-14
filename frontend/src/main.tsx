@@ -7,6 +7,7 @@ import "./redesign.css";
 import "./profiles.css";
 import "./superapp.css";
 import "./emblems.css";
+import "./directive.css";
 const CommandCenter = lazy(() => import("./command-center"));
 const Landing = lazy(() =>
   import("./components/landing").then((module) => ({

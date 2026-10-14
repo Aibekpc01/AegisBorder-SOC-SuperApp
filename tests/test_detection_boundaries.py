@@ -1,6 +1,43 @@
+from datetime import timedelta
+
 import pytest
 
 from app.command.models import utcnow
+
+
+@pytest.mark.parametrize(
+    "success_second,denied_second,expected_risk", [(15, 50, 65), (45, 5, 80), (45, 50, 95)]
+)
+def test_escalation_requires_chronological_chain(
+    admin, success_second, denied_second, expected_risk
+):
+    start = utcnow()
+    events = [(second, "login_failed", {}) for second in (0, 10, 20, 30, 40)]
+    events += [
+        (success_second, "login_success", {"local_hour": 12}),
+        (denied_second, "file_denied", {"restricted": True}),
+    ]
+    for index, (second, kind, features) in enumerate(sorted(events)):
+        response = admin.post(
+            "/api/v1/events",
+            json={
+                "external_id": f"ordered-{index}",
+                "time": (start + timedelta(seconds=second)).isoformat(),
+                "device": "chronology",
+                "account": "synthetic",
+                "source": "test",
+                "type": kind,
+                "detail": "Учебная проверка порядка",
+                "features": features,
+            },
+        )
+        assert response.status_code == 200, response.text
+    incident = next(
+        i for i in admin.get("/api/v1/incidents").json() if i["rule_id"] == "bruteforce"
+    )
+    assert incident["risk"] == expected_risk
+    detail = admin.get(f"/api/v1/incidents/{incident['id']}").json()
+    assert len(detail["events"]) == {65: 5, 80: 6, 95: 7}[expected_risk]
 
 
 @pytest.mark.parametrize(

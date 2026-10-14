@@ -45,8 +45,8 @@ powershell -NoProfile -File scripts/build_local.ps1
 
 Команды — в [docs/testing.md](testing.md), фактические результаты — в [docs/testing-results.md](testing-results.md). Из корневого README используйте ссылки ниже:
 
-- [Архитектура](../docs/architecture.md), [спецификация](../docs/technical-specification.md), [схема БД](../docs/database-schema.md), [API](../docs/api.md).
-- [Безопасность](../docs/security.md), [руководство сотрудника](../docs/user-guide.md), [демонстрация комиссии](../docs/demo-guide.md).
+- [Архитектура](../docs/ARCHITECTURE.md), [спецификация](../docs/technical-specification.md), [схема БД](../docs/database-schema.md), [API](../docs/api.md).
+- [Безопасность](../docs/SECURITY.md), [руководство сотрудника](../docs/user-guide.md), [демонстрация комиссии](../docs/demo-guide.md).
 - [Установка Windows](../docs/installation-windows.md), [проверки](../docs/testing.md), [результаты](../docs/testing-results.md), [план релиза](../docs/release-checklist.md).
 
 Windows 8/8.1 и чистая установка на других компьютерах пока не подтверждены тестами. Готовность к служебной эксплуатации не заявляется. Перед размещением в изолированной сети необходимы отдельная проверка безопасности, TLS, процедуры резервного восстановления и приёмка.

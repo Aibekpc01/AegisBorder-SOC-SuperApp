@@ -71,15 +71,23 @@ def analyze(db, event):
             f"Устройство: {event.device}. Учётная запись: {event.account}. Совпадений: {len(matched)}; окно: {rule.window} с.",
         ]
         if rule.id == "bruteforce":
+
+            def order_key(item):
+                return (item.time.replace(tzinfo=timezone.utc), item.id)
+
+            threshold_event = matched[rule.threshold - 1]
             successes = [
                 x
                 for x in peers
-                if x.type == "login_success"
-                and x.time.replace(tzinfo=timezone.utc)
-                >= matched[0].time.replace(tzinfo=timezone.utc)
+                if x.type == "login_success" and order_key(x) > order_key(threshold_event)
             ]
             restricted = [
-                x for x in peers if x.type == "file_denied" and x.features.get("restricted") is True
+                x
+                for x in peers
+                if successes
+                and x.type == "file_denied"
+                and x.features.get("restricted") is True
+                and order_key(x) > order_key(successes[0])
             ]
             if successes:
                 risk = min(100, risk + 15)

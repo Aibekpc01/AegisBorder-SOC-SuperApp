@@ -14,11 +14,13 @@ import {
   Network,
   Play,
   ShieldCheck,
+  Shield,
   Sparkles,
   Usb,
 } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
-import { Emblem, EmblemPair } from "./emblems";
+import { Emblem, EmblemPair, publicEmblemsEnabled } from "./emblems";
+import { ModuleMenu, ModuleCatalog } from "./module-menu";
 
 const examples = [
   {
@@ -119,7 +121,7 @@ export function Landing() {
       </a>
       <header className="landing-nav">
         <Link to="/" className="landing-brand">
-          <EmblemPair className="landing-emblems" />
+          <EmblemPair className="landing-emblems" publicMode />
           <b>
             AegisBorder<small>SuperApp / учебный контур</small>
           </b>
@@ -130,6 +132,7 @@ export function Landing() {
           <a href="#practice">Полигон</a>
         </nav>
         <div className="row">
+          <ModuleMenu />
           <ThemeToggle />
           <Link className="btn btn-outline" to="/app">
             Рабочая панель <ArrowRight size={15} />
@@ -144,23 +147,25 @@ export function Landing() {
               ПЛАТФОРМА
             </span>
             <h1>
-              AegisBorder
+              AEGISBORDER
               <br />
-              <em>SuperApp</em>
+              <em>SUPERAPP</em>
             </h1>
             <p className="hero-mission">
-              Интеллектуальная система защиты
-              <br />
-              Пограничной службы КНБ РК
+              Единая интеллектуальная платформа мониторинга, анализа и
+              расследования киберинцидентов
             </p>
             <p className="hero-description">
               Единое пространство для обнаружения, анализа и расследования
               киберинцидентов. От первого сигнала до понятного решения — в одном
               интерфейсе.
             </p>
+            <a className="hero-explore" href="#capabilities">
+              Изучить возможности <ArrowDown size={15} />
+            </a>
             <div className="hero-actions">
               <Link className="btn btn-primary" to="/app">
-                Открыть рабочую панель <ArrowRight size={17} />
+                Открыть SuperApp <ArrowRight size={17} />
               </Link>
               <Link className="btn btn-outline" to="/app/commission">
                 <Play size={16} /> Запустить демонстрацию
@@ -186,7 +191,11 @@ export function Landing() {
             <div className="visual-orbit orbit-one" />
             <div className="visual-orbit orbit-two" />
             <div className="shield-core">
-              <Emblem kind="border" className="hero-emblem" />
+              {publicEmblemsEnabled ? (
+                <Emblem kind="border" className="hero-emblem" />
+              ) : (
+                <Shield size={80} />
+              )}
               <span>AEGIS</span>
               <small>SECURITY CORE</small>
             </div>
@@ -417,10 +426,36 @@ export function Landing() {
           </Link>
           <small>Для запуска потребуется ваша учебная учётная запись.</small>
         </section>
+        <ModuleCatalog />
+        <section className="landing-about" id="about">
+          <div>
+            <span className="landing-kicker">О ПРОЕКТЕ</span>
+            <h2>Технологии, понятные оператору.</h2>
+            <p>
+              AegisBorder — демонстрационная платформа для обучения обнаружению
+              и расследованию киберинцидентов в контексте задач Пограничной
+              службы КНБ РК.
+            </p>
+            <p>
+              Используются синтетические события. Продукт не заявляет
+              официального одобрения государственного органа. Реальные служебные
+              системы не подключены.
+            </p>
+            <a className="btn btn-outline" href="/app/help">
+              Инструкция нового сотрудника <ArrowRight size={16} />
+            </a>
+          </div>
+          <div className="about-branding">
+            <EmblemPair className="about-emblems" publicMode />
+            <strong>AEGISBORDER</strong>
+            <small>ОБУЧЕНИЕ · АНАЛИЗ · РАССЛЕДОВАНИЕ</small>
+          </div>
+        </section>
       </main>
       <footer className="landing-footer">
         <span>
-          <EmblemPair className="footer-emblems" /> AegisBorder SuperApp
+          <EmblemPair className="footer-emblems" publicMode /> AegisBorder
+          SuperApp
         </span>
         <p>
           Демонстрационный проект. Синтетические данные. Не является официальным

@@ -14,7 +14,10 @@ services:
       timeout: 3s
       retries: 20
   app:
-    build: .
+    build:
+      context: .
+      args:
+        VITE_PUBLIC_OFFICIAL_EMBLEMS: ${VITE_PUBLIC_OFFICIAL_EMBLEMS:-true}
     restart: unless-stopped
     environment:
       DATABASE_URL: postgresql+psycopg2://aegis:${DB_PASSWORD}@db:5432/aegisborder

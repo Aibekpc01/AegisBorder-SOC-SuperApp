@@ -1,5 +1,8 @@
 import borderService from "../assets/border-service.png";
 import knb from "../assets/knb.svg";
+import { Shield } from "lucide-react";
+export const publicEmblemsEnabled =
+  import.meta.env.VITE_PUBLIC_OFFICIAL_EMBLEMS !== "false";
 
 export function Emblem({
   kind,
@@ -26,7 +29,21 @@ export function Emblem({
   );
 }
 
-export function EmblemPair({ className = "" }: { className?: string }) {
+export function EmblemPair({
+  className = "",
+  publicMode = false,
+}: {
+  className?: string;
+  publicMode?: boolean;
+}) {
+  if (publicMode && !publicEmblemsEnabled)
+    return (
+      <Shield
+        className="public-brand-mark"
+        size={38}
+        aria-label="Знак AegisBorder"
+      />
+    );
   return (
     <div className={"emblem-pair " + className}>
       <Emblem kind="border" />

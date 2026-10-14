@@ -58,7 +58,7 @@ test("SuperApp: публичный лендинг, темы и сохранен�
   });
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: "AegisBorder SuperApp" }),
+    page.getByRole("heading", { name: "AEGISBORDER SUPERAPP" }),
   ).toBeVisible();
   await page.getByRole("button", { name: /Неизвестный USB/ }).click();
   await expect(page.locator(".preview-detail h3")).toHaveText(
@@ -84,7 +84,7 @@ test("SuperApp: публичный лендинг, темы и сохранен�
   await page.setViewportSize({ width: 1440, height: 1000 });
   expect(privateCalls).toEqual([]);
   await page
-    .getByRole("link", { name: "Открыть рабочую панель", exact: true })
+    .getByRole("link", { name: "Открыть SuperApp", exact: true })
     .click();
   await page.getByLabel("Имя пользователя").fill(username);
   await page.getByLabel("Пароль", { exact: true }).fill(password);
