@@ -1,5 +1,6 @@
 import { Info, ArrowUpRight, ChevronDown } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { appPage, appPath } from "../lib/routes";
 import { Button } from "./ui/button";
 
 const guides: Record<
@@ -122,7 +123,7 @@ export function BlockGuide({
   text?: string;
   steps?: string;
 }) {
-  const page = useLocation().pathname.slice(1),
+  const page = appPage(useLocation().pathname),
     navigate = useNavigate();
   const guide = guides[title] ||
     pageGuides[page] || {
@@ -142,7 +143,7 @@ export function BlockGuide({
         </summary>
         <p>{steps || guide.steps}</p>
         {guide.path && (
-          <Button variant="ghost" onClick={() => navigate(guide.path!)}>
+          <Button variant="ghost" onClick={() => navigate(appPath(guide.path!))}>
             {guide.action}
             <ArrowUpRight size={14} />
           </Button>

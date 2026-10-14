@@ -1,5 +1,7 @@
 # API v1
 
+Модуль документов: `/api/v1/workspace/templates`, `/workspace/documents`, `/workspace/documents/{id}`, `/workspace/documents/{id}/versions`, `/workspace/documents/{id}/comments`. Поля, права и обработка конфликтов описаны в [инструкции Workspace](workspace.md).
+
 OpenAPI: http://127.0.0.1:8000/docs. Браузер использует HttpOnly-cookie после POST /api/v1/auth/login; для тестов можно передать этот JWT в Authorization: Bearer. Токен не возвращается в JSON и не хранится в sessionStorage.
 
 | Маршруты | Возможности |

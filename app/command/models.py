@@ -16,6 +16,43 @@ class Role(Base):
     description: Mapped[str] = mapped_column(String(150))
 
 
+class WorkspaceDocument(Base):
+    __tablename__ = "cc_workspace_documents"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str] = mapped_column(String(200), index=True)
+    content: Mapped[dict] = mapped_column(JSON)
+    plain_text: Mapped[str] = mapped_column(Text)
+    owner_id: Mapped[int] = mapped_column(ForeignKey("cc_users.id"), index=True)
+    assignee_id: Mapped[int | None] = mapped_column(ForeignKey("cc_users.id"))
+    incident_id: Mapped[int | None] = mapped_column(ForeignKey("cc_incidents.id"), index=True)
+    demo_only: Mapped[bool] = mapped_column(default=False)
+    status: Mapped[str] = mapped_column(String(30), default="Черновик")
+    revision: Mapped[int] = mapped_column(default=1)
+    created: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
+
+
+class DocumentVersion(Base):
+    __tablename__ = "cc_document_versions"
+    __table_args__ = (UniqueConstraint("document_id", "revision"),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    document_id: Mapped[int] = mapped_column(ForeignKey("cc_workspace_documents.id"), index=True)
+    revision: Mapped[int] = mapped_column()
+    author_id: Mapped[int] = mapped_column(ForeignKey("cc_users.id"))
+    snapshot: Mapped[dict] = mapped_column(JSON)
+    digest: Mapped[str] = mapped_column(String(64))
+    created: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class DocumentComment(Base):
+    __tablename__ = "cc_document_comments"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    document_id: Mapped[int] = mapped_column(ForeignKey("cc_workspace_documents.id"), index=True)
+    author_id: Mapped[int] = mapped_column(ForeignKey("cc_users.id"))
+    text: Mapped[str] = mapped_column(Text)
+    created: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
 class User(Base):
     __tablename__ = "cc_users"
     id: Mapped[int] = mapped_column(primary_key=True)

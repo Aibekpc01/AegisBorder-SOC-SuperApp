@@ -47,6 +47,7 @@ from .models import (
     Setting,
     User,
     UserProfile,
+    WorkspaceDocument,
     utcnow,
 )
 from .reports import pdf
@@ -85,6 +86,15 @@ from .access import inspect as inspect_connection
 from .profile_routes import router as profile_router
 from .profiles import user_record
 from .serialization import record
+from .workspace import (
+    add_version as workspace_version,
+)
+from .workspace import (
+    check_integrity as workspace_integrity,
+)
+from .workspace import (
+    router as workspace_router,
+)
 
 
 @asynccontextmanager
@@ -137,6 +147,7 @@ async def lifespan(app):
 
 app = FastAPI(title="AegisBorder SOC — Command Center", version=VERSION, lifespan=lifespan)
 app.include_router(profile_router)
+app.include_router(workspace_router)
 
 
 @app.middleware("http")
@@ -640,6 +651,19 @@ def reset_demo(demo_id: int, user=Depends(operator), db=Depends(get_db)):
     )
     for model in (Alert, Comment, History, Investigation, Report, IncidentEvent):
         db.execute(delete(model).where(model.incident_id.in_(inc_ids)))
+    for doc in db.scalars(
+        select(WorkspaceDocument).where(WorkspaceDocument.incident_id.in_(inc_ids))
+    ):
+        workspace_integrity(db, doc)
+        doc.incident_id = None
+        doc.revision += 1
+        doc.updated = utcnow()
+        workspace_version(db, doc, user)
+        audit(
+            db,
+            user.id,
+            f"Workspace: документ {doc.id} сохранён после сброса учебного сеанса, связь снята",
+        )
     db.execute(delete(Incident).where(Incident.id.in_(inc_ids)))
     db.execute(delete(Event).where(Event.demo_id == demo_id, Event.owner_id == user.id))
     db.execute(
@@ -867,6 +891,15 @@ async def stream(websocket: WebSocket):
 
 
 dist = Path(__file__).resolve().parents[1] / "web"
+
+
+@app.get("/assets", include_in_schema=False)
+@app.get("/assets/", include_in_schema=False)
+def legacy_assets_page():
+    # Старый раздел компьютеров не должен перехватываться каталогом JS/CSS.
+    return frontend("assets")
+
+
 if (dist / "assets").exists():
     app.mount("/assets", StaticFiles(directory=dist / "assets"), name="assets")
 

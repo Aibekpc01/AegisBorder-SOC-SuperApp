@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from starlette.routing import Match
+
 from app import legacy_main as m
 
 schema = "aegis_test_" + uuid.uuid4().hex

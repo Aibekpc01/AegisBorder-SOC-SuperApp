@@ -47,13 +47,163 @@ with SessionLocal() as db:
 test.beforeAll(() => testAccount());
 test.afterAll(() => testAccount(true));
 
+test("SuperApp: публичный лендинг, темы и сохранение Workspace после обновления", async ({
+  page,
+}) => {
+  const errors: string[] = [],
+    privateCalls: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  page.on("request", (request) => {
+    if (request.url().includes("/api/v1/")) privateCalls.push(request.url());
+  });
+  await page.goto("/");
+  await expect(
+    page.getByRole("heading", { name: "AegisBorder SuperApp" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: /Неизвестный USB/ }).click();
+  await expect(page.locator(".preview-detail h3")).toHaveText(
+    "Неизвестный USB",
+  );
+  await page.getByRole("button", { name: "Включить светлую тему" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await page.screenshot({
+    path: "test-results/superapp-light.png",
+    fullPage: true,
+  });
+  await page.getByRole("button", { name: "Включить тёмную тему" }).click();
+  await page.screenshot({
+    path: "test-results/superapp-landing.png",
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(
+    await page.evaluate(() => document.body.scrollWidth <= window.innerWidth),
+  ).toBeTruthy();
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  expect(privateCalls).toEqual([]);
+  await page
+    .getByRole("link", { name: "Открыть рабочую панель", exact: true })
+    .click();
+  await page.getByLabel("Имя пользователя").fill(username);
+  await page.getByLabel("Пароль", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Войти в систему" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Главная панель", exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("link", { name: "Документы и рабочее пространство" })
+    .click();
+  const title = "Учебный материал UI " + randomUUID().slice(0, 8);
+  await page
+    .getByRole("button", { name: "Создать документ", exact: true })
+    .click();
+  let dialog = page.getByRole("dialog");
+  await dialog.getByLabel("Название документа").fill(title);
+  await dialog.getByRole("button", { name: "Создать и открыть" }).click();
+  await expect(page.locator(".document-save-state")).toContainText("Сохранено");
+  const editor = page.getByRole("textbox", { name: "Текст документа" });
+  await editor.click();
+  await editor.press("Control+End");
+  await editor.press("Enter");
+  await editor.pressSequentially("Доказательства сохранены в PostgreSQL");
+  await expect(page.locator(".document-save-state")).toContainText(
+    "Сохранено",
+    { timeout: 15000 },
+  );
+  await page
+    .getByRole("button", { name: "Вставить таблицу", exact: true })
+    .click();
+  await expect(editor.locator("table")).toBeVisible();
+  await expect(page.locator(".document-save-state")).toContainText(
+    "Сохранено",
+    { timeout: 15000 },
+  );
+  await page
+    .getByLabel("Комментарий к документу")
+    .fill("Учебная заметка комиссии");
+  await page.getByRole("button", { name: "Добавить заметку" }).click();
+  await expect(
+    page.getByText("Учебная заметка комиссии", { exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Отправить на проверку" }).click();
+  await expect(page.locator(".document-status")).toContainText("На проверке");
+  await page.getByRole("button", { name: "Утвердить документ" }).click();
+  await expect(page.locator(".document-status")).toContainText("Утверждён");
+  await expect(editor).toHaveAttribute("contenteditable", "false");
+  await page.getByRole("button", { name: "История версий" }).click();
+  dialog = page.getByRole("dialog");
+  await expect(
+    dialog.getByRole("button", { name: /Версия 1 · Черновик/ }),
+  ).toBeVisible();
+  await dialog.getByRole("button", { name: /Версия 1 · Черновик/ }).click();
+  await expect(
+    page.getByRole("dialog").last().getByRole("heading", { name: title }),
+  ).toBeVisible();
+  await page
+    .getByRole("dialog")
+    .last()
+    .getByRole("button", { name: "Закрыть", exact: true })
+    .click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Закрыть", exact: true })
+    .click();
+  await page.screenshot({
+    path: "test-results/workspace-editor.png",
+    fullPage: true,
+  });
+  await page.reload();
+  await page.getByRole("button", { name: new RegExp(title) }).click();
+  await expect(
+    page.getByRole("textbox", { name: "Текст документа" }),
+  ).toContainText("Доказательства сохранены в PostgreSQL");
+  await expect(page.locator(".document-paper table")).toBeVisible();
+  await expect(
+    page.getByText("Учебная заметка комиссии", { exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "К документам" }).click();
+  await page.getByLabel("Поиск документов").fill(title);
+  await expect(page.locator(".document-card")).toHaveCount(1);
+  // Старые прямые ссылки продолжают открывать прежние страницы.
+  await page.goto("/events");
+  await expect(
+    page.getByRole("heading", { name: "Мониторинг событий", exact: true }),
+  ).toBeVisible();
+  await page.goto("/assets");
+  await expect(
+    page.getByRole("heading", { name: "Контроль компьютеров", exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Открыть глобальный поиск", exact: true })
+    .click();
+  await page.getByLabel("Глобальный поиск", { exact: true }).fill("учеб");
+  await expect(
+    page
+      .getByRole("dialog")
+      .getByRole("heading", { name: "Инциденты", exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Закрыть", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Открыть уведомления об инцидентах" })
+    .click();
+  await expect(page.getByRole("dialog")).toContainText(
+    "Текущие незакрытые инциденты",
+  );
+  expect(errors).toEqual([]);
+});
+
 test("Личный профиль, фото, история IP, геолокация и проверка политики VPN", async ({
   page,
   context,
 }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
-  await page.goto("/");
+  await page.goto("/app");
   await page.getByLabel("Имя пользователя").fill(username);
   await page.getByLabel("Пароль", { exact: true }).fill(password);
   await page.getByRole("button", { name: "Войти в систему" }).click();
@@ -91,13 +241,11 @@ test("Личный профиль, фото, история IP, геолокац
     "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAIAAABvFaqvAAAALElEQVR4nGO02PuDgRqAiSqmMIwaRAwYDWzCYDSMCIPRMCIMRsOIMBh8YQQA1TkCHcjanMUAAAAASUVORK5CYII=",
     "base64",
   );
-  await dialog
-    .getByLabel("Фото пользователя", { exact: true })
-    .setInputFiles({
-      name: "synthetic-avatar.png",
-      mimeType: "image/png",
-      buffer: image,
-    });
+  await dialog.getByLabel("Фото пользователя", { exact: true }).setInputFiles({
+    name: "synthetic-avatar.png",
+    mimeType: "image/png",
+    buffer: image,
+  });
   await expect(dialog.getByRole("status")).toContainText("Фото сохранено");
   await expect(
     dialog.getByRole("img", { name: "Фото Учебный оператор интерфейса" }),
@@ -201,7 +349,7 @@ test("Интерактивный полигон: категории, карти�
 }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
-  await page.goto("/");
+  await page.goto("/app");
   await page.getByLabel("Имя пользователя").fill(username);
   await page.getByLabel("Пароль", { exact: true }).fill(password);
   await page.getByRole("button", { name: "Войти в систему" }).click();
@@ -305,7 +453,7 @@ test("Комиссия: сценарий → расследование → PDF 
 }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
-  await page.goto("/");
+  await page.goto("/app");
   await page.getByLabel("Имя пользователя").fill("admin");
   await page.getByLabel("Имя пользователя").fill(username);
   await page.getByLabel("Пароль", { exact: true }).fill(password);
@@ -392,7 +540,7 @@ test("Роли в браузере и изоляция двух демонстр
       const context = await browser.newContext();
       contexts.push(context);
       const page = await context.newPage();
-      await page.goto("/");
+      await page.goto("/app");
       await page.getByLabel("Имя пользователя").fill(account.username);
       await page.getByLabel("Пароль", { exact: true }).fill(testPassword);
       await page.getByRole("button", { name: "Войти в систему" }).click();
@@ -442,7 +590,7 @@ test("Роли в браузере и изоляция двух демонстр
 test("Все разделы, поиск, фильтры и настройки правил", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
-  await page.goto("/");
+  await page.goto("/app");
   await page.getByLabel("Имя пользователя").fill(username);
   await page.getByLabel("Пароль", { exact: true }).fill(password);
   await page.getByRole("button", { name: "Войти в систему" }).click();
