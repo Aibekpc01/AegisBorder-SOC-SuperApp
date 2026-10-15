@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowUpRight, Grid2X2, Search } from "lucide-react";
-import { modules, moduleGroups } from "../lib/modules";
+import { modules, moduleGroups, platformNavigation } from "../lib/modules";
 import { appPath } from "../lib/routes";
 import { Dialog } from "./ui/dialog";
+import { explainers } from "../lib/explainers";
 
 export function ModuleMenu({ compact = false }: { compact?: boolean }) {
   const [open, setOpen] = useState(false),
@@ -13,21 +14,24 @@ export function ModuleMenu({ compact = false }: { compact?: boolean }) {
       <button
         className={compact ? "icon-btn" : "mega-trigger"}
         aria-label="Открыть меню модулей"
+        title="Разделы приложения — выберите, что хотите сделать"
         onClick={() => setOpen(true)}
       >
         <Grid2X2 size={18} />
-        {!compact && <span>Платформа</span>}
+        <span className={compact ? "compact-menu-caption" : ""}>
+          {compact ? "Разделы" : "Платформа"}
+        </span>
       </button>
       <Dialog
-        title="Модули AegisBorder SuperApp"
+        title="Модули AegisBorder Supper"
         open={open}
         onClose={() => setOpen(false)}
       >
         <div className="mega-menu">
           <p>
-            Выберите рабочий инструмент. Разделы в плане не выполняют действий и
-            отмечены отдельно. Доступ внутри приложения определяется вашей
-            ролью.
+            Выберите, что хотите сделать. Под названием каждого раздела есть
+            короткое объяснение. Для первого знакомства начните с демонстрации
+            проекта или учебной ситуации.
           </p>
           <div className="row">
             <Search size={17} />
@@ -40,7 +44,7 @@ export function ModuleMenu({ compact = false }: { compact?: boolean }) {
           </div>
           <div className="mega-groups">
             {moduleGroups.map((group) => {
-              const list = modules.filter(
+              const list = platformNavigation.filter(
                 (m) =>
                   m.group === group &&
                   (m.name + m.description)
@@ -54,22 +58,20 @@ export function ModuleMenu({ compact = false }: { compact?: boolean }) {
                     <div className="mega-item" key={m.id}>
                       <m.Icon size={19} />
                       <div>
-                        {"path" in m ? (
-                          <Link
-                            to={appPath(m.path)}
-                            onClick={() => setOpen(false)}
-                          >
-                            {m.name}
-                            <ArrowUpRight size={13} />
-                          </Link>
-                        ) : (
-                          <b>{m.name}</b>
-                        )}
-                        <small>{m.description}</small>
+                        <Link
+                          to={appPath(m.path)}
+                          onClick={() => setOpen(false)}
+                        >
+                          {m.name}
+                          <ArrowUpRight size={13} />
+                        </Link>
+                        <small>
+                          {explainers[m.path]?.description || m.description}
+                        </small>
                         <span
                           className={
                             "module-state " +
-                            (m.status === "Протестирован"
+                            (m.status.startsWith("Протестирован")
                               ? "tested"
                               : "planned")
                           }
@@ -83,7 +85,7 @@ export function ModuleMenu({ compact = false }: { compact?: boolean }) {
               ) : null;
             })}
           </div>
-          {!modules.some((m) =>
+          {!platformNavigation.some((m) =>
             (m.name + m.description)
               .toLocaleLowerCase("ru")
               .includes(query.toLocaleLowerCase("ru")),
@@ -104,7 +106,7 @@ export function ModuleCatalog() {
           <h2>
             Рабочие инструменты.
             <br />
-            Прозрачный план развития.
+            Понятная польза каждого модуля.
           </h2>
         </div>
         <p>
@@ -133,11 +135,11 @@ export function ModuleCatalog() {
                 <small>{String(m.id).padStart(2, "0")}</small>
               </div>
               <h3>{m.name}</h3>
-              <p>{m.description}</p>
+              <p>{explainers[m.path]?.description || m.description}</p>
               <span
                 className={
                   "module-state " +
-                  (m.status === "Протестирован" ? "tested" : "planned")
+                  (m.status.startsWith("Протестирован") ? "tested" : "planned")
                 }
               >
                 {m.status}

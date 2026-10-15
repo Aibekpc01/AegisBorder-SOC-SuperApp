@@ -1,0 +1,363 @@
+/* Emblem-led identity: navy surfaces, teal actions, restrained gold details. */
+.institution-emblem {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 50%;
+}
+.institution-emblem .emblem-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 50%;
+}
+.emblem-light {
+  position: absolute;
+  inset: -20%;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 38%,
+    #ffffff35 48%,
+    #fff7 50%,
+    #ffffff20 53%,
+    transparent 63%
+  );
+  transform: translateX(-140%);
+}
+.login-emblems .institution-emblem,
+.hero-identity-emblems .institution-emblem,
+.intro-emblems .institution-emblem {
+  animation: emblem-arrive 0.65s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  box-shadow:
+    0 10px 35px #0004,
+    0 0 0 1px #d0aa6720;
+}
+.login-emblems .institution-emblem:nth-child(2),
+.hero-identity-emblems .institution-emblem:nth-child(2),
+.intro-emblems .institution-emblem:nth-child(2) {
+  animation-delay: 110ms;
+}
+.login-emblems .emblem-light,
+.hero-identity-emblems .emblem-light,
+.intro-emblems .emblem-light {
+  animation: emblem-shine 1.15s 0.5s ease-in-out both;
+}
+.hero-identity-emblems .institution-emblem:nth-child(2) .emblem-light,
+.intro-emblems .institution-emblem:nth-child(2) .emblem-light {
+  animation-delay: 0.75s;
+}
+.hero-emblem-stage {
+  min-height: 285px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  position: relative;
+}
+.hero-emblem-stage > span {
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.8px;
+}
+.hero-identity-emblems {
+  gap: 28px;
+  z-index: 1;
+}
+.hero-identity-emblems .institution-emblem {
+  width: 132px;
+  height: 132px;
+}
+.identity-orbit {
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  width: 340px;
+  height: 190px;
+  transform: translate(-50%, -50%) rotate(-15deg);
+  border: 1px solid #d0aa6725;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.identity-orbit:after {
+  content: "";
+  position: absolute;
+  inset: -25px 20px;
+  border: 1px solid #43b7bf18;
+  border-radius: 50%;
+  transform: rotate(30deg);
+}
+.intro-emblems {
+  gap: 28px;
+}
+.intro-emblems .institution-emblem {
+  width: 96px;
+  height: 96px;
+}
+.ultra-intro {
+  background: #0b1424;
+}
+.ultra-intro-mark {
+  color: var(--ultra-cyan);
+}
+.ultra-intro-mark > span {
+  font-size: 27px;
+  letter-spacing: 2px;
+  color: #f4f6fa;
+}
+.ultra-intro-mark small {
+  max-width: 650px;
+  text-align: center;
+  line-height: 1.8;
+  letter-spacing: 0.2px;
+  color: #a5b5c8;
+  padding: 0 24px;
+}
+.shell .brand-icon {
+  width: 38px;
+  height: 38px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.shell .brand-icon .institution-emblem {
+  width: 36px;
+  height: 36px;
+}
+.shell .brand strong {
+  color: var(--brand-gold);
+  letter-spacing: 2px;
+}
+.shell .brand {
+  font-weight: 550;
+}
+.shell nav a.active {
+  color: var(--ultra-cyan);
+  box-shadow:
+    inset 2px 0 var(--brand-gold),
+    inset 0 0 0 1px #43b7bf12;
+  background: linear-gradient(90deg, #43b7bf12, #43b7bf03);
+}
+.shell .workspace > header {
+  background: var(--ultra-secondary);
+  backdrop-filter: none;
+}
+.shell .page-heading .eyebrow {
+  color: var(--brand-gold);
+  letter-spacing: 1.3px;
+}
+.shell .workspace > footer {
+  gap: 18px;
+  align-items: center;
+}
+.shell .workspace > footer > span {
+  max-width: 700px;
+  text-align: right;
+  font-size: 9px;
+  line-height: 1.6;
+}
+.super-landing .landing-brand b {
+  font-weight: 550;
+  letter-spacing: 0.1px;
+}
+.super-landing .landing-brand small {
+  font-size: 8px;
+  letter-spacing: 0.8px;
+  color: var(--muted);
+}
+.super-landing .landing-hero h1 em {
+  color: var(--brand-gold);
+  font-size: 0.86em;
+  letter-spacing: -1.8px;
+}
+.super-landing .landing-hero h1 {
+  font-size: clamp(45px, 4.7vw, 74px);
+}
+.super-landing .hero-mission {
+  font-size: 18px;
+  line-height: 1.8;
+  max-width: 560px;
+  font-weight: 400;
+}
+.super-landing .hero-visual {
+  background: linear-gradient(140deg, var(--surface), var(--ultra-secondary));
+  border-color: var(--line);
+}
+.super-landing .hero-visual:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 28px;
+  right: 28px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #d0aa6760, transparent);
+}
+.super-landing .ultra-public-core-heading b {
+  color: var(--brand-gold);
+}
+.login .login-art > p {
+  max-width: 490px;
+  line-height: 1.9;
+  font-size: 16px;
+  margin: 20px auto;
+}
+.login .login-art h1 span {
+  color: var(--brand-gold);
+}
+.ultra-core .orbit-b {
+  border-color: #d0aa6740;
+}
+.ultra-core-center {
+  background: linear-gradient(140deg, #43b7bf12, #d0aa6705);
+  box-shadow:
+    inset 0 0 28px #43b7bf06,
+    0 0 40px #43b7bf08;
+}
+.ultra-network-edge {
+  animation-duration: 22s;
+}
+.corporate-chat-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  padding: 20px 0 8px;
+}
+.corporate-chat-heading h2 {
+  font-size: 28px;
+  margin-top: 8px;
+}
+.corporate-chat-heading p {
+  font-size: 12px;
+  margin-bottom: 0;
+  max-width: 650px;
+}
+.team-workspace .team-chat {
+  min-width: 0;
+}
+.team-workspace .team-message {
+  border-color: var(--line);
+  background: var(--ultra-secondary);
+  border-radius: 10px;
+}
+.team-workspace .team-message.own {
+  background: #43b7bf0c;
+  border-color: #43b7bf30;
+}
+.team-workspace .team-chat-log {
+  background: var(--ultra-bg);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.team-workspace .team-member {
+  border-color: var(--line);
+}
+@media (hover: hover) {
+  .landing-brand:hover .emblem-light,
+  .institution-emblem:hover > .emblem-light {
+    animation: emblem-shine 0.85s ease-in-out both;
+  }
+  .ultra-incident-card:hover,
+  .ultra-kpi:hover {
+    transform: translateY(-2px);
+    transition:
+      transform 0.18s,
+      border-color 0.18s,
+      background 0.18s;
+  }
+  .institution-emblem:hover .emblem-art {
+    filter: brightness(1.05);
+    transition: filter 0.18s;
+  }
+}
+@keyframes emblem-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes emblem-shine {
+  0% {
+    opacity: 0;
+    transform: translateX(-140%);
+  }
+  25% {
+    opacity: 0.65;
+  }
+  70% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(140%);
+  }
+}
+@media (max-width: 760px) {
+  .hero-identity-emblems {
+    gap: 22px;
+  }
+  .hero-identity-emblems .institution-emblem {
+    width: 105px;
+    height: 105px;
+  }
+  .hero-emblem-stage {
+    min-height: 260px;
+  }
+  .identity-orbit {
+    width: 290px;
+    height: 165px;
+  }
+  .intro-emblems .institution-emblem {
+    width: 78px;
+    height: 78px;
+  }
+  .ultra-intro-mark > span {
+    font-size: 23px;
+    letter-spacing: 1px;
+  }
+  .ultra-intro-mark small {
+    font-size: 10px;
+  }
+  .corporate-chat-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .super-landing .hero-mission {
+    font-size: 16px;
+  }
+  .shell .workspace > footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .shell .workspace > footer > span {
+    text-align: left;
+  }
+  .ultra-skeleton-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .institution-emblem,
+  .institution-emblem .emblem-light,
+  .institution-emblem:hover > .emblem-light,
+  .landing-brand:hover .emblem-light {
+    animation: none !important;
+    transform: none !important;
+  }
+  .emblem-light {
+    display: none;
+  }
+  .ultra-incident-card:hover,
+  .ultra-kpi:hover {
+    transform: none;
+    transition: none;
+  }
+}

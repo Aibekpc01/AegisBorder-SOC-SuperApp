@@ -1,4 +1,5 @@
 import { Info, ArrowUpRight, ChevronDown } from "lucide-react";
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { appPage, appPath } from "../lib/routes";
 import { Button } from "./ui/button";
@@ -84,7 +85,7 @@ const pageGuides: Record<
       "Администратор может изменить параметры. Повторный анализ применит текущие правила к сохранённым событиям.",
   },
   anomalies: {
-    text: "Результат отдельного анализа Isolation Forest на учебном профиле.",
+    text: "Показывает поведение, которое отличается от обычного учебного образца.",
     steps:
       "Сравните признаки и оценку модели. Аномалия означает отличие от профиля, а не доказанную атаку.",
   },
@@ -125,6 +126,7 @@ export function BlockGuide({
 }) {
   const page = appPage(useLocation().pathname),
     navigate = useNavigate();
+  const [inlineExplanation, setInlineExplanation] = useState(false);
   const guide = guides[title] ||
     pageGuides[page] || {
       text: "Этот блок отображает данные системы.",
@@ -132,23 +134,54 @@ export function BlockGuide({
         "Используйте доступные действия и проверьте результат уведомления.",
     };
   return (
-    <div className="block-guide">
+    <div
+      className="block-guide"
+      data-guide-title={title}
+      data-guide-text={text || guide.text}
+      data-guide-steps={steps || guide.steps}
+    >
       <div className="block-guide-lead">
         <Info size={15} />
         <p>{text || guide.text}</p>
       </div>
       <details>
         <summary>
-          Как пользоваться этим блоком <ChevronDown size={13} />
+          Что делать дальше <ChevronDown size={13} />
         </summary>
         <p>{steps || guide.steps}</p>
         {guide.path && (
-          <Button variant="ghost" onClick={() => navigate(appPath(guide.path!))}>
+          <Button
+            variant="ghost"
+            onClick={() => navigate(appPath(guide.path!))}
+          >
             {guide.action}
             <ArrowUpRight size={14} />
           </Button>
         )}
       </details>
+      <button
+        type="button"
+        className="block-explain-button"
+        onClick={(event) =>
+          event.currentTarget.closest('[role="dialog"]')
+            ? setInlineExplanation((value) => !value)
+            : window.dispatchEvent(
+                new CustomEvent("aegis-explain-block", {
+                  detail: event.currentTarget.parentElement,
+                }),
+              )
+        }
+      >
+        Помощник: объяснить этот блок
+      </button>
+      {inlineExplanation && (
+        <div className="assistant-message" role="status">
+          <b>Локальное объяснение: {title}</b>
+          <p>{text || guide.text}</p>
+          <h4>Что делать дальше</h4>
+          <p>{steps || guide.steps}</p>
+        </div>
+      )}
     </div>
   );
 }

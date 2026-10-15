@@ -28,9 +28,9 @@ def pdf(snapshot):
     for style in styles.byName.values():
         style.fontName = "Aegis"
     stream = BytesIO()
-    document = SimpleDocTemplate(stream, title="AegisBorder SOC — отчёт", author="AegisBorder SOC")
+    document = SimpleDocTemplate(stream, title="AegisBorder Supper — отчёт", author="AegisBorder Supper")
     sections = [
-        "AegisBorder SOC — учебный отчёт",
+        "AegisBorder Supper — учебный отчёт",
         f"Инцидент №{snapshot['id']}: {snapshot['title']}",
         f"Риск: {snapshot['risk']}/100. Статус: {snapshot['status']}",
         snapshot["explanation"],

@@ -65,7 +65,7 @@
   box-shadow: 0 12px 30px #0002;
 }
 .metric:focus-visible {
-  outline: 2px solid #38bdf8;
+  outline: 2px solid #43b7bf;
 }
 .metric-instruction {
   display: flex;
@@ -222,7 +222,7 @@
 .profile-cover {
   border: 1px solid #426080;
   background:
-    radial-gradient(ellipse at right, #38bdf814, transparent 70%),
+    radial-gradient(ellipse at right, #43b7bf14, transparent 70%),
     linear-gradient(125deg, #21445b, #172c45);
   padding: 22px;
   border-radius: 13px;
@@ -262,7 +262,7 @@
 }
 .profile-tabs button[aria-selected="true"] {
   border-color: #3e899d66;
-  background: #38bdf813;
+  background: #43b7bf13;
   color: #96dbf3;
 }
 .profile-message {
@@ -311,7 +311,7 @@
   margin: 0;
 }
 .photo-upload:focus-within {
-  outline: 2px solid #38bdf8;
+  outline: 2px solid #43b7bf;
   outline-offset: 3px;
 }
 .photo-controls > small {
@@ -426,7 +426,7 @@
   width: 17px;
   height: 17px;
   margin: 2px 0 0;
-  accent-color: #38bdf8;
+  accent-color: #43b7bf;
   flex-shrink: 0;
 }
 .policy-option b {
@@ -506,7 +506,7 @@
   cursor: pointer;
 }
 .event-row:focus-visible {
-  outline: 2px solid #38bdf8;
+  outline: 2px solid #43b7bf;
   outline-offset: -2px;
 }
 .event-summary {

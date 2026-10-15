@@ -7,7 +7,7 @@
 }
 @theme {
   --color-background: #0b1424;
-  --color-primary: #38bdf8;
+  --color-primary: #43b7bf;
 }
 :root {
   font-family: "Segoe UI", Arial, sans-serif;
@@ -92,7 +92,7 @@ textarea {
 input:focus,
 select:focus,
 textarea:focus {
-  border-color: #38bdf8;
+  border-color: #43b7bf;
 }
 label {
   display: block;
@@ -140,9 +140,9 @@ pre {
   white-space: nowrap;
 }
 .btn-primary {
-  background: #38bdf8;
+  background: #43b7bf;
   color: #06223a;
-  box-shadow: 0 2px 8px #38bdf814;
+  box-shadow: 0 2px 8px #43b7bf14;
 }
 .btn-primary:hover {
   background: #7dd3fc;
@@ -206,7 +206,7 @@ pre {
   padding: 0 8px;
 }
 .brand strong {
-  color: #38bdf8;
+  color: #43b7bf;
 }
 .brand small {
   display: block;
@@ -217,12 +217,12 @@ pre {
 .brand-icon {
   width: 40px;
   height: 43px;
-  border: 1px solid #38bdf84f;
+  border: 1px solid #43b7bf4f;
   border-radius: 10px;
   display: grid;
   place-items: center;
-  background: #38bdf812;
-  color: #38bdf8;
+  background: #43b7bf12;
+  color: #43b7bf;
 }
 .nav-label {
   font-size: 9px;
@@ -250,14 +250,14 @@ nav a:hover {
   color: #e5edf7;
 }
 nav a.active {
-  background: linear-gradient(90deg, #38bdf820, #38bdf810);
+  background: linear-gradient(90deg, #43b7bf20, #43b7bf10);
   color: #65cdfd;
 }
 nav a.active:before {
   content: "";
   width: 3px;
   height: 22px;
-  background: #38bdf8;
+  background: #43b7bf;
   position: absolute;
   left: -15px;
   border-radius: 3px;
@@ -517,7 +517,7 @@ td svg {
   color: #f87171;
 }
 .risk.medium {
-  color: #38bdf8;
+  color: #43b7bf;
 }
 .risk small {
   font-size: 10px;
@@ -527,7 +527,7 @@ td svg {
 .commission-hero {
   border: 1px solid #295171;
   background:
-    radial-gradient(ellipse at 80% 30%, #38bdf816, transparent 60%), #11273e;
+    radial-gradient(ellipse at 80% 30%, #43b7bf16, transparent 60%), #11273e;
   border-radius: 9px;
   padding: 25px;
   display: flex;
@@ -665,7 +665,7 @@ footer {
   margin-bottom: 0;
 }
 .commission-hero svg {
-  color: #38bdf8;
+  color: #43b7bf;
   opacity: 0.6;
 }
 .steps {
@@ -730,7 +730,7 @@ footer {
 .checkbox input {
   width: 16px;
   margin: 0;
-  accent-color: #38bdf8;
+  accent-color: #43b7bf;
 }
 .guide {
   padding-left: 22px;
@@ -788,7 +788,7 @@ footer {
   margin-bottom: 0;
 }
 .comment {
-  border-left: 2px solid #38bdf8;
+  border-left: 2px solid #43b7bf;
   padding: 10px 15px;
   background: #172b43;
   margin-bottom: 9px;
@@ -832,7 +832,7 @@ footer {
 }
 .loading-line {
   height: 2px;
-  background: linear-gradient(90deg, transparent, #38bdf8, transparent);
+  background: linear-gradient(90deg, transparent, #43b7bf, transparent);
   margin-bottom: 18px;
 }
 .login {
@@ -849,7 +849,7 @@ footer {
   text-align: center;
 }
 .login-art > svg {
-  color: #38bdf8;
+  color: #43b7bf;
   display: block;
   margin: 0 auto 25px;
 }
@@ -857,7 +857,7 @@ footer {
   font-size: 42px;
 }
 .login-art h1 span {
-  color: #38bdf8;
+  color: #43b7bf;
 }
 .login-art p {
   font-size: 17px;
@@ -883,7 +883,7 @@ footer {
   line-height: 1.7;
 }
 .accent {
-  color: #38bdf8;
+  color: #43b7bf;
 }
 @media (min-width: 1600px) {
   main {

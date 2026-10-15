@@ -1,6 +1,9 @@
 from alembic import context
 
-from app.command import models  # noqa: F401
+from app.command import (
+    models,  # noqa: F401
+    superapp_models,  # noqa: F401
+)
 from app.command.db import Base, engine
 
 with engine.connect() as connection:

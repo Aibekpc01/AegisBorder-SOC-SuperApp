@@ -1,0 +1,97 @@
+.superapp-module {
+  display: grid;
+  gap: 18px;
+}
+.superapp-module h2,
+.superapp-module h3,
+.superapp-module p {
+  margin: 0;
+}
+.module-form {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--sa-border);
+  border-radius: 12px;
+}
+.module-form-grid,
+.module-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 16px;
+}
+.module-card {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  padding: 18px;
+  border: 1px solid var(--sa-border);
+  border-radius: 12px;
+  background: var(--sa-surface);
+  overflow-wrap: anywhere;
+}
+.module-card p {
+  white-space: pre-wrap;
+}
+.module-history {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  text-align: left;
+  background: var(--sa-surface);
+  color: var(--sa-text);
+  border: 1px solid var(--sa-border);
+  border-radius: 8px;
+  overflow-wrap: anywhere;
+}
+.module-history small {
+  display: block;
+  margin-top: 7px;
+}
+.module-code {
+  width: 100%;
+  font-family: monospace;
+}
+.module-radio {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0;
+}
+.module-radio input {
+  width: auto;
+}
+.superapp-module fieldset {
+  border: 1px solid var(--sa-border);
+  border-radius: 8px;
+  margin: 12px 0;
+  padding: 12px;
+}
+.twin-layout {
+  display: grid;
+  gap: 20px;
+}
+.twin-node {
+  text-align: left;
+  color: var(--sa-text);
+  cursor: pointer;
+}
+.twin-node:hover,
+.twin-node:focus-visible,
+.twin-node.selected {
+  border-color: var(--sa-accent);
+}
+.twin-connection {
+  border-left: 3px solid var(--sa-accent);
+  padding: 10px;
+}
+.analytics-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr 30px;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+}
+.analytics-bar meter {
+  width: 100%;
+}

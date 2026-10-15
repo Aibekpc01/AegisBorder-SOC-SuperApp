@@ -32,9 +32,9 @@ h2 {
   gap: 11px;
 }
 .brand-icon {
-  background: linear-gradient(140deg, #38bdf822, #22d3ee08);
+  background: linear-gradient(140deg, #43b7bf22, #22d3ee08);
   border-color: #53d2ff66;
-  box-shadow: 0 0 25px #38bdf812;
+  box-shadow: 0 0 25px #43b7bf12;
 }
 .brand small.brand-mission {
   letter-spacing: 0;
@@ -54,8 +54,8 @@ nav a {
   padding-bottom: 12px;
 }
 nav a.active {
-  box-shadow: inset 0 0 0 1px #38bdf82b;
-  background: linear-gradient(100deg, #38bdf824, #38bdf80a);
+  box-shadow: inset 0 0 0 1px #43b7bf2b;
+  background: linear-gradient(100deg, #43b7bf24, #43b7bf0a);
 }
 nav a svg {
   stroke-width: 1.65;
@@ -101,7 +101,7 @@ header {
   width: 135px;
   height: 135px;
   border-radius: 50%;
-  background: #38bdf809;
+  background: #43b7bf09;
   pointer-events: none;
 }
 .metric .row > svg {
@@ -129,12 +129,12 @@ header {
     transform 0.18s;
 }
 .btn-primary {
-  background: linear-gradient(110deg, #38bdf8, #41cbdc);
-  box-shadow: 0 4px 16px #38bdf815;
+  background: linear-gradient(110deg, #43b7bf, #41cbdc);
+  box-shadow: 0 4px 16px #43b7bf15;
 }
 .btn-primary:hover {
   background: linear-gradient(110deg, #70d4ff, #70e2e3);
-  box-shadow: 0 5px 22px #38bdf82b;
+  box-shadow: 0 5px 22px #43b7bf2b;
 }
 .btn-outline {
   background: #163048;
@@ -150,7 +150,7 @@ header {
 .education-banner,
 .commission-hero {
   background:
-    radial-gradient(ellipse at 100% 10%, #38bdf827, transparent 65%),
+    radial-gradient(ellipse at 100% 10%, #43b7bf27, transparent 65%),
     linear-gradient(110deg, #15354c, #12223a);
   border-radius: 13px;
   border-color: #365973;
@@ -175,7 +175,7 @@ tbody tr {
   transition: background 0.16s;
 }
 tbody tr:hover {
-  background: #38bdf805;
+  background: #43b7bf05;
 }
 .profile .avatar {
   border: 1px solid #4ac6e047;
@@ -206,7 +206,7 @@ tbody tr:hover {
   letter-spacing: -1.5px;
 }
 .login-art > svg {
-  filter: drop-shadow(0 0 22px #38bdf840);
+  filter: drop-shadow(0 0 22px #43b7bf40);
 }
 .lab-hero {
   display: flex;
@@ -369,7 +369,7 @@ tbody tr:hover {
   padding: 7px 11px;
 }
 .lab-filters button.active {
-  background: #38bdf81c;
+  background: #43b7bf1c;
   border-color: #4cbaf565;
   color: #91ddff;
 }
@@ -405,7 +405,7 @@ tbody tr:hover {
 .lab-scenario.selected {
   background: linear-gradient(100deg, #1c435b, #18324b);
   border-color: #43bbed8c;
-  box-shadow: inset 3px 0 0 #38bdf8;
+  box-shadow: inset 3px 0 0 #43b7bf;
 }
 .lab-scenario > span:nth-child(2) {
   flex: 1;
@@ -430,7 +430,7 @@ tbody tr:hover {
   width: 37px;
   height: 39px;
   border-radius: 10px;
-  background: #38bdf810;
+  background: #43b7bf10;
   color: #71cdfb;
   display: grid;
   place-items: center;
@@ -453,7 +453,7 @@ tbody tr:hover {
   top: 20px;
   padding: 28px;
   background:
-    radial-gradient(ellipse at 90% 0%, #38bdf80e, transparent 70%),
+    radial-gradient(ellipse at 90% 0%, #43b7bf0e, transparent 70%),
     linear-gradient(140deg, #172e45, #102035);
 }
 .lab-detail-title {
@@ -472,7 +472,7 @@ tbody tr:hover {
   border-radius: 14px;
   display: grid;
   place-items: center;
-  background: #38bdf810;
+  background: #43b7bf10;
   color: #72d5f3;
   flex-shrink: 0;
 }
@@ -522,8 +522,8 @@ tbody tr:hover {
   padding: 14px 5px;
 }
 .lab-flow button.active {
-  background: #38bdf812;
-  border-color: #38bdf873;
+  background: #43b7bf12;
+  border-color: #43b7bf73;
   color: #7dd3fc;
 }
 .lab-flow small {
@@ -719,7 +719,7 @@ tbody tr:hover {
   margin: 7px 0 0;
 }
 .guide-counter {
-  background: #38bdf810;
+  background: #43b7bf10;
   color: #86d8f8;
   border: 1px solid #3a789855;
   border-radius: 8px;
@@ -750,7 +750,7 @@ tbody tr:hover {
   padding: 22px 0 8px;
 }
 .guide-detail-icon {
-  background: #38bdf80b;
+  background: #43b7bf0b;
   border: 1px solid #325976;
   border-radius: 12px;
   width: 53px;
@@ -800,7 +800,7 @@ tbody tr:hover {
 .guide-pagination button.active {
   width: 23px;
   border-radius: 8px;
-  background: #38bdf8;
+  background: #43b7bf;
 }
 @media (min-width: 1700px) {
   .lab-hero h2 {

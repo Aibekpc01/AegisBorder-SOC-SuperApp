@@ -1,9 +1,9 @@
 export type Row = Record<string, any>;
-export async function api(
+export async function api<T = any>(
   path: string,
   method = "GET",
   data?: unknown,
-): Promise<any> {
+): Promise<T> {
   const response = await fetch("/api/v1" + path, {
     method,
     credentials: "same-origin",

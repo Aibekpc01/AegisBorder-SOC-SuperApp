@@ -95,6 +95,21 @@ def current(request: Request, db=Depends(get_db)):
     assessment = inspect(db, request)
     if not assessment["network"]["allowed"] and request.url.path != "/api/v1/auth/logout":
         raise HTTPException(403, assessment["network"]["reason"])
+    if user.role == "demo_viewer" and request.method not in ("GET", "HEAD", "OPTIONS"):
+        # Only isolated synthetic runs, personal analysis/export and logout may write.
+        # Default-deny covers every router, including future administrative endpoints.
+        import re
+
+        allowed = request.method == "POST" and (
+            request.url.path in (
+                "/api/v1/auth/logout", "/api/v1/demo-sessions", "/api/v1/analytics/anomalies",
+                "/api/v1/presence/heartbeat",
+            )
+            or re.fullmatch(r"/api/v1/scenarios/[a-z0-9_-]+", request.url.path)
+            or re.fullmatch(r"/api/v1/reports/\d+", request.url.path)
+        )
+        if not allowed:
+            raise HTTPException(403, "Демонстрационный просмотр: изменение постоянных данных запрещено")
     request.state.session = session
     return user
 
@@ -106,14 +121,14 @@ def admin(user=Depends(current)):
 
 
 def operator(user=Depends(current)):
-    if user.role not in ("admin", "analyst", "demo"):
+    if user.role not in ("admin", "analyst", "demo", "demo_viewer"):
         raise HTTPException(403, "Доступ только для чтения")
     return user
 
 
 def visible(query, model, user):
     # Demo accounts never see global or foreign-session records.
-    if user.role == "demo":
+    if user.role in ("demo", "demo_viewer"):
         return query.where(model.owner_id == user.id)
     if hasattr(model, "demo_id"):
         return query.where((model.demo_id.is_(None)) | (model.owner_id == user.id))

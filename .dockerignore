@@ -1,4 +1,6 @@
 .env
+.env.public-demo
+.env.oracle
 .git
 __pycache__
 *.db
@@ -13,3 +15,7 @@ test-results
 playwright-report
 app/web
 *.dump
+release
+
+.env.server-admin
+.env.ultra-preview

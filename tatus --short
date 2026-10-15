@@ -1,0 +1,53 @@
+warning: in the working copy of '.dockerignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Dockerfile', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/command/db.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/command/models.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/command/profile_routes.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/command/reports.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/command/schemas.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/e2e/command.spec.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/emblems.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/landing.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/vite.config.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'migrations/env.py', LF will be replaced by CRLF the next time Git touches it
+ .dockerignore                             |   6 [32m+[m
+ .gitignore                                |   6 [32m+[m
+ Dockerfile                                |   3 [32m+[m[31m-[m
+ README.md                                 |  11 [32m+[m
+ app/command/api.py                        |  87 [32m++[m[31m-[m
+ app/command/db.py                         |   4 [32m+[m[31m-[m
+ app/command/models.py                     |  12 [32m+[m
+ app/command/profile_routes.py             |   2 [32m+[m
+ app/command/reports.py                    |   4 [32m+[m[31m-[m
+ app/command/schemas.py                    |   2 [32m+[m[31m-[m
+ app/command/security.py                   |  19 [32m+[m[31m-[m
+ app/command/workspace.py                  |   6 [32m+[m[31m-[m
+ docs/FEATURE_STATUS.md                    |  30 [32m+[m[31m-[m
+ docs/release-checklist.md                 |   4 [32m+[m[31m-[m
+ docs/testing-results.md                   |  33 [32m++[m
+ docs/user-guide.md                        |   4 [32m+[m[31m-[m
+ frontend/e2e/command.spec.ts              | 722 [32m++++++++++++++++++++++++[m[31m-[m
+ frontend/index.html                       |   2 [32m+[m[31m-[m
+ frontend/src/api.ts                       |   4 [32m+[m[31m-[m
+ frontend/src/command-center.tsx           | 847 [32m++++++++++++++[m[31m----------------[m
+ frontend/src/components/app-tools.tsx     |   6 [32m+[m[31m-[m
+ frontend/src/components/block-guide.tsx   |  41 [32m+[m[31m-[m
+ frontend/src/components/emblems.tsx       |  29 [32m+[m[31m-[m
+ frontend/src/components/event-table.tsx   |  30 [32m+[m[31m-[m
+ frontend/src/components/landing.tsx       | 128 [32m++[m[31m---[m
+ frontend/src/components/module-menu.tsx   |  50 [32m+[m[31m-[m
+ frontend/src/components/user-profiles.tsx |  58 [32m+[m[31m-[m
+ frontend/src/components/visual-guide.tsx  |   4 [32m+[m[31m-[m
+ frontend/src/components/workspace.tsx     |  23 [32m+[m[31m-[m
+ frontend/src/lib/modules.ts               |  72 [32m++[m[31m-[m
+ frontend/src/lib/routes.ts                |  21 [32m+[m
+ frontend/src/lib/utils.ts                 |   1 [32m+[m
+ frontend/src/main.tsx                     |  11 [32m+[m[31m-[m
+ frontend/src/profiles.css                 |  12 [32m+[m[31m-[m
+ frontend/src/redesign.css                 |  42 [32m+[m[31m-[m
+ frontend/src/style.css                    |  38 [32m+[m[31m-[m
+ frontend/src/superapp.css                 |  28 [32m+[m[31m-[m
+ frontend/vite.config.ts                   |   2 [32m+[m[31m-[m
+ migrations/env.py                         |   5 [32m+[m[31m-[m
+ 39 files changed, 1723 insertions(+), 686 deletions(-)

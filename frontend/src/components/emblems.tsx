@@ -13,19 +13,22 @@ export function Emblem({
 }) {
   const border = kind === "border";
   return (
-    <img
-      className={"institution-emblem " + className}
-      src={border ? borderService : knb}
-      alt={
-        border
-          ? "Эмблема Пограничной службы КНБ РК"
-          : "Эмблема Комитета национальной безопасности РК"
-      }
-      width={64}
-      height={64}
-      decoding="async"
-      draggable={false}
-    />
+    <span className={"institution-emblem emblem-" + kind + " " + className}>
+      <img
+        className="emblem-art"
+        src={border ? borderService : knb}
+        alt={
+          border
+            ? "Эмблема Пограничной службы КНБ РК"
+            : "Эмблема Комитета национальной безопасности РК"
+        }
+        width={64}
+        height={64}
+        decoding="async"
+        draggable={false}
+      />
+      <span className="emblem-light" aria-hidden="true" />
+    </span>
   );
 }
 

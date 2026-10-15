@@ -3,7 +3,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
 
-RoleName = Literal["admin", "analyst", "observer", "demo"]
+RoleName = Literal["admin", "analyst", "observer", "demo", "demo_viewer"]
 
 
 class LoginInput(BaseModel):

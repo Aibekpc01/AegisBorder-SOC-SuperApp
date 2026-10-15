@@ -175,8 +175,8 @@ export function DevelopmentModules() {
   return (
     <>
       <p>
-        Следующие модули входят в план SuperApp. Они ещё не подключены к серверу
-        и не выполняют действий.
+        Новые локальные модули доступны через меню платформы. Внешние
+        подключения и расширения требуют отдельной настройки и проверки.
       </p>
       <div className="module-roadmap">
         {[
@@ -205,7 +205,7 @@ export function DevelopmentModules() {
             <ShieldAlert size={23} />
             <h2>{title}</h2>
             <p>{text}</p>
-            <span className="badge">Запланировано · действий пока нет</span>
+            <span className="badge">Локальный учебный контур</span>
           </article>
         ))}
       </div>

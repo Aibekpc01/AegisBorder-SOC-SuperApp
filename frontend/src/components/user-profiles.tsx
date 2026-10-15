@@ -12,6 +12,7 @@ import {
   Save,
   LocateFixed,
   CheckCircle2,
+  MoreHorizontal,
 } from "lucide-react";
 import { api, type Row } from "../api";
 import { date, roles } from "../lib/utils";
@@ -363,6 +364,11 @@ export function LastConnection({ person }: { person: Row }) {
         <div>
           <LocateFixed size={21} />
           <small>Последние переданные координаты</small>
+          {location.city && (
+            <p>
+              {location.country} · {location.city} (приблизительно)
+            </p>
+          )}
           <strong>
             {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
           </strong>
@@ -383,6 +389,7 @@ export function UsersWorkspace({
   currentUser: Row;
   onChanged: () => void;
 }) {
+  const [confirmAccess, setConfirmAccess] = useState<Row | null>(null);
   const client = useQueryClient(),
     [q, setQ] = useState(""),
     [role, setRole] = useState(""),
@@ -507,11 +514,26 @@ export function UsersWorkspace({
                 <Button
                   variant="ghost"
                   disabled={busy}
-                  onClick={() => toggle(u)}
+                  onClick={() => setConfirmAccess(u)}
                 >
                   {u.active ? "Отключить" : "Включить"}
                 </Button>
               )}
+              <details className="ultra-card-menu">
+                <summary aria-label={`Действия с пользователем ${u.username}`}>
+                  <MoreHorizontal size={18} />
+                </summary>
+                <div>
+                  <button onClick={() => setEditing(u.id)}>
+                    Редактировать профиль и роль
+                  </button>
+                  {u.id !== currentUser.id && (
+                    <button disabled={busy} onClick={() => setConfirmAccess(u)}>
+                      {u.active ? "Отключить доступ" : "Восстановить доступ"}
+                    </button>
+                  )}
+                </div>
+              </details>
             </div>
           </article>
         ))}
@@ -523,6 +545,40 @@ export function UsersWorkspace({
         </div>
       )}
       <BlockGuide title="Учётные записи" />
+      <Dialog
+        title={
+          confirmAccess?.active
+            ? "Отключить доступ пользователя?"
+            : "Восстановить доступ пользователя?"
+        }
+        open={confirmAccess !== null}
+        onClose={() => setConfirmAccess(null)}
+      >
+        {confirmAccess && (
+          <>
+            <p>
+              Пользователь: {confirmAccess.username}. История действий и
+              материалы расследований сохранятся. Операция будет записана в
+              аудит.
+            </p>
+            <div className="row">
+              <Button variant="outline" onClick={() => setConfirmAccess(null)}>
+                Отмена
+              </Button>
+              <Button
+                disabled={busy}
+                variant={confirmAccess.active ? "destructive" : "default"}
+                onClick={async () => {
+                  await toggle(confirmAccess);
+                  setConfirmAccess(null);
+                }}
+              >
+                Подтвердить
+              </Button>
+            </div>
+          </>
+        )}
+      </Dialog>
       <Dialog
         title="Личная карточка пользователя"
         open={editing !== null}

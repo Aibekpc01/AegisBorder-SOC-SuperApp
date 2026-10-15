@@ -118,6 +118,8 @@ def share_location(
         **data.model_dump(mode="json"),
         "source": "Сообщено браузером с разрешением пользователя; независимо не проверено",
     }
+    from .location import city_label
+    row.location.update(city_label(data.latitude, data.longitude, data.accuracy))
     audit(db, user.id, "Пользователь передал местоположение браузера")
     db.commit()
     return row.location

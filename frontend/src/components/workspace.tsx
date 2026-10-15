@@ -31,19 +31,24 @@ const extensions = [
 export function Workspace({
   user,
   initialIncident,
+  initialDocument,
 }: {
   user: Row;
   initialIncident?: number;
+  initialDocument?: number;
 }) {
   const client = useQueryClient(),
-    [selected, setSelected] = useState<number | null>(null),
+    [selected, setSelected] = useState<number | null>(initialDocument || null),
     [search, setSearch] = useState(""),
     [creation, setCreation] = useState(false),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
   const docs = useQuery({
-    queryKey: ["documents", search],
-    queryFn: () => api(`${base}?q=${encodeURIComponent(search)}`),
+    queryKey: ["documents", search, initialIncident],
+    queryFn: () =>
+      api(
+        `${base}?q=${encodeURIComponent(search)}${initialIncident ? `&incident_id=${initialIncident}` : ""}`,
+      ),
   });
   const templates = useQuery({
     queryKey: ["document-templates"],
@@ -67,6 +72,7 @@ export function Workspace({
       {selected === null ? (
         <>
           <div className="row between wrap">
+            {initialIncident && <p>Материалы инцидента #{initialIncident}</p>}
             <div className="workspace-search">
               <Search size={17} />
               <input
@@ -77,7 +83,7 @@ export function Workspace({
                 maxLength={200}
               />
             </div>
-            {user.role !== "observer" && (
+            {!["observer", "demo_viewer"].includes(user.role) && (
               <Button onClick={() => setCreation(true)}>
                 <Plus size={16} /> Создать документ
               </Button>
@@ -314,10 +320,17 @@ function DocumentEditor({
       }
     };
     window.addEventListener("beforeunload", unload);
+    const beforeNavigation = (event: Event) => {
+      if (dirtyRef.current || lock.current) {
+        event.preventDefault();
+      }
+    };
+    window.addEventListener("aegis-before-navigation", beforeNavigation);
     document.addEventListener("click", followLink, true);
     return () => {
       mounted.current = false;
       window.removeEventListener("beforeunload", unload);
+      window.removeEventListener("aegis-before-navigation", beforeNavigation);
       document.removeEventListener("click", followLink, true);
     };
   }, []);
@@ -635,7 +648,7 @@ function DocumentEditor({
           </article>
         ))}
         {!comments.length && <p>Комментариев пока нет.</p>}
-        {user.role !== "observer" && (
+        {!["observer", "demo_viewer"].includes(user.role) && (
           <form
             onSubmit={async (e) => {
               e.preventDefault();

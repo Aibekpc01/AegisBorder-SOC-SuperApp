@@ -72,6 +72,18 @@ class AuthSession(Base):
     revoked: Mapped[bool] = mapped_column(default=False)
 
 
+class SiteVisit(Base):
+    __tablename__ = "cc_site_visits"
+    session_id: Mapped[str] = mapped_column(ForeignKey("cc_auth_sessions.id"), primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("cc_users.id"), index=True)
+    device: Mapped[str] = mapped_column(String(100))
+    browser: Mapped[str] = mapped_column(String(60))
+    ip: Mapped[str] = mapped_column(String(100))
+    first_seen: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    last_seen: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
+    connected: Mapped[bool] = mapped_column(default=True)
+
+
 class UserProfile(Base):
     __tablename__ = "cc_user_profiles"
     user_id: Mapped[int] = mapped_column(ForeignKey("cc_users.id"), primary_key=True)

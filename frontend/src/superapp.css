@@ -1,4 +1,4 @@
-/* SuperApp: локальные шрифты, отсутствие внешних ресурсов. */
+/* Supper: локальные шрифты, отсутствие внешних ресурсов. */
 :root {
   --sa-bg: #091322;
   --sa-surface: #122238;
@@ -48,7 +48,7 @@
   border-radius: 12px;
   padding: 11px;
   color: var(--sa-accent);
-  background: #38bdf810;
+  background: #43b7bf10;
 }
 .landing-brand b {
   font-size: 20px;
@@ -181,8 +181,8 @@
   border: 1px solid #63dff855;
   border-radius: 35px;
   box-shadow:
-    0 0 60px #38bdf816,
-    inset 0 0 20px #38bdf80a;
+    0 0 60px #43b7bf16,
+    inset 0 0 20px #43b7bf0a;
   z-index: 1;
   color: #7fe1f5;
 }
@@ -299,8 +299,8 @@
   margin-bottom: 9px;
 }
 .preview-console aside button.active {
-  background: #38bdf810;
-  border-color: #38bdf83d;
+  background: #43b7bf10;
+  border-color: #43b7bf3d;
   color: var(--sa-accent);
 }
 .preview-console aside button small {
@@ -391,9 +391,9 @@
   box-shadow: 0 0 0 4px #64d4e511;
 }
 .preview-explanation {
-  background: #38bdf807;
+  background: #43b7bf07;
   padding: 17px;
-  border: 1px solid #38bdf825;
+  border: 1px solid #43b7bf25;
   border-radius: 10px;
 }
 .preview-explanation p {
@@ -471,8 +471,8 @@
   color: var(--sa-muted);
 }
 .flow-steps button.active {
-  background: #38bdf813;
-  border-color: #38bdf866;
+  background: #43b7bf13;
+  border-color: #43b7bf66;
 }
 .flow-steps button.active span,
 .flow-steps button.active svg {
@@ -1130,9 +1130,9 @@
   color: var(--sa-muted);
 }
 .editor-toolbar > button[aria-pressed="true"] {
-  background: #38bdf820;
+  background: #43b7bf20;
   color: var(--sa-accent);
-  border-color: #38bdf844;
+  border-color: #43b7bf44;
 }
 .document-paper {
   background: var(--sa-surface);
@@ -1196,10 +1196,10 @@
   position: relative;
 }
 .document-paper th {
-  background: #38bdf813;
+  background: #43b7bf13;
 }
 .document-paper .selectedCell {
-  background: #38bdf81f;
+  background: #43b7bf1f;
 }
 .document-paper .tableWrapper {
   overflow: auto;

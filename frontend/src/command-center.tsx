@@ -26,18 +26,9 @@ import {
   RefreshCw,
   LockKeyhole,
   Layers,
+  Menu,
+  X,
 } from "lucide-react";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-  BarChart,
-  Bar,
-} from "recharts";
 import { Button } from "./components/ui/button";
 import { Dialog } from "./components/ui/dialog";
 import { api, type Row } from "./api";
@@ -55,16 +46,38 @@ import {
 import { AccessPolicy } from "./components/access-policy";
 import { EventTable } from "./components/event-table";
 import { TrainingLab } from "./components/training-lab";
-import { VisualGuide } from "./components/visual-guide";
+import {
+  DemonstrationLanding,
+  LearningCenter,
+} from "./components/project-experience";
 import { ThemeToggle } from "./components/theme-toggle";
 import { AppTools, DevelopmentModules } from "./components/app-tools";
-import { appPath, appPage } from "./lib/routes";
+import { appPath, appPage, queryId, extendedPages } from "./lib/routes";
 import { Emblem, EmblemPair } from "./components/emblems";
 import { ModuleMenu } from "./components/module-menu";
+import { InvestigationGraph } from "./components/investigation-graph";
+import { PagePrimer, PlainLanguageHelp } from "./components/beginner-help";
+import { explainers } from "./lib/explainers";
 import "./superapp.css";
+import { UltraDashboard } from "./components/ultra-dashboard";
+import { UltraIncidents } from "./components/ultra-incidents";
+import { BRAND_NAME, BRAND_TAGLINE } from "./lib/brand";
+import {
+  UltraIntro,
+  DigitalCore,
+  PresentationMode,
+} from "./components/ultra-visuals";
+import "./ultra.css";
+import { PresenceSignal, Participants, Devices, DemoWelcome } from "./components/presence-workspace";
+import { AutomaticLocation } from "./components/automatic-location";
 const Workspace = React.lazy(() =>
   import("./components/workspace").then((module) => ({
     default: module.Workspace,
+  })),
+);
+const SuperappModules = React.lazy(() =>
+  import("./components/superapp-modules").then((module) => ({
+    default: module.SuperappModules,
   })),
 );
 
@@ -74,7 +87,7 @@ const pages = [
   ["incidents", "Центр инцидентов", ShieldAlert],
   ["analysis", "Умный анализ", BrainCircuit],
   ["anomalies", "Обнаружение аномалий", ScanLine],
-  ["assets", "Контроль компьютеров", Monitor],
+  ["assets", "Устройства", Monitor],
   ["scenarios", "Учебные сценарии", FlaskConical],
   ["investigations", "Расследования", Search],
   ["reports", "Отчёты", FileText],
@@ -83,9 +96,52 @@ const pages = [
   ["audit", "История действий", History],
   ["settings", "Настройки", Settings],
   ["help", "Справка и обучение", BookOpen],
-  ["commission", "Режим комиссии", Presentation],
-  ["development", "Развитие SuperApp", Layers],
+  ["commission", "Демонстрация проекта", Presentation],
+  ["team", "Чат", Users],
+  ["participants", "Участники", Users],
+  ["development", "Развитие Supper", Layers],
+  ["assistant", "Aegis AI", BrainCircuit],
+  ["mail", "Почтовая безопасность", ShieldAlert],
+  ["m365", "Microsoft 365 Monitor", Monitor],
+  ["twin", "Цифровой двойник", Layers],
+  ["tasks", "Задачи и согласования", FileText],
+  ["integrations", "Центр интеграций", Layers],
+  ["rule-builder", "Конструктор правил", Settings],
+  ["academy", "Академия безопасности", BookOpen],
+  ["scenario-builder", "Конструктор сценариев", FlaskConical],
+  ["security-analytics", "Аналитика безопасности", Activity],
 ] as const;
+const navigationGroups = [
+  {
+    title: "Начните здесь",
+    paths: ["", "commission", "scenarios", "academy", "help"],
+  },
+  {
+    title: "Ситуации и проверка",
+    paths: ["incidents", "events", "investigations", "assistant", "mail"],
+  },
+  {
+    title: "Работа и результаты",
+    paths: ["workspace", "tasks", "team", "participants", "reports", "security-analytics"],
+  },
+  {
+    title: "Устройства и источники",
+    paths: ["assets", "twin", "m365", "integrations"],
+  },
+  {
+    title: "Правила и управление",
+    paths: [
+      "analysis",
+      "anomalies",
+      "rule-builder",
+      "scenario-builder",
+      "users",
+      "audit",
+      "settings",
+      "development",
+    ],
+  },
+];
 function Panel({
   title,
   subtitle,
@@ -126,18 +182,27 @@ function Empty({
 function Risk({ value }: { value: number }) {
   return (
     <span
-      className={
-        "risk " + (value >= 85 ? "critical" : value >= 65 ? "high" : "medium")
-      }
+      className="risk-display"
+      title="Оценка важности проверки по правилам. Не вероятность атаки."
     >
-      {value} <small>/100</small>
+      <span
+        className={
+          "risk " + (value >= 85 ? "critical" : value >= 65 ? "high" : "medium")
+        }
+      >
+        {value} <small>/100</small>
+      </span>
+      <span className="risk-meaning">{riskLabel(value)}</span>
     </span>
   );
 }
 export default function App() {
+  const [navOpen, setNavOpen] = useState(false);
+  const [collapsedGroups, setCollapsedGroups] = useState<string[]>([]);
   const [user, setUser] = useState<Row | null>(null),
     [ready, setReady] = useState(false),
     [technical, setTechnical] = useState(false),
+    [navSearch, setNavSearch] = useState(""),
     [notice, setNotice] = useState(""),
     [busy, setBusy] = useState(false);
   const [selected, setSelected] = useState<number | null>(null),
@@ -155,7 +220,40 @@ export default function App() {
     client = useQueryClient();
   const navigate = (path: string) => routerNavigate(appPath(path));
   const page = appPage(location.pathname);
-  const editable = !!user && user.role !== "observer",
+  useEffect(() => {
+    const resize = () => {
+      if (window.innerWidth <= 1000) setCollapsedGroups([]);
+    };
+    const shortcuts = (event: KeyboardEvent) => {
+      if (
+        !user ||
+        event.repeat ||
+        (event.target instanceof HTMLElement &&
+          (event.target.matches("input,textarea,select") ||
+            event.target.isContentEditable))
+      )
+        return;
+      const destination = event.altKey
+        ? (
+            { "1": "", "2": "incidents", "3": "assistant" } as Record<
+              string,
+              string
+            >
+          )[event.key]
+        : undefined;
+      if (destination !== undefined) {
+        event.preventDefault();
+        routerNavigate(appPath(destination));
+      }
+    };
+    window.addEventListener("resize", resize);
+    window.addEventListener("keydown", shortcuts);
+    return () => {
+      window.removeEventListener("resize", resize);
+      window.removeEventListener("keydown", shortcuts);
+    };
+  }, [routerNavigate, user]);
+  const editable = !!user && !["observer", "demo_viewer"].includes(user.role),
     isAdmin = user?.role === "admin";
   useEffect(() => {
     api("/auth/me")
@@ -172,6 +270,7 @@ export default function App() {
   useEffect(() => {
     setQ(new URLSearchParams(location.search).get("q") || "");
     setFilter("");
+    setNavOpen(false);
     setOffset(0);
     window.scrollTo(0, 0);
   }, [page, location.search]);
@@ -227,6 +326,10 @@ export default function App() {
     queryFn: () => api("/health"),
     enabled: !!user,
     refetchInterval: 15000,
+  });
+  const authOptions = useQuery({
+    queryKey: ["auth-options"],
+    queryFn: () => api<{ public_demo: boolean }>("/auth/options"),
   });
   const preferences = useQuery({
     queryKey: ["preferences"],
@@ -296,13 +399,19 @@ export default function App() {
   async function run(id: string, commission = false) {
     return await act(async () => {
       let demoId = session;
-      if ((commission || user?.role === "demo") && !demoId) {
+      if (
+        (commission || ["demo", "demo_viewer"].includes(user?.role || "")) &&
+        !demoId
+      ) {
         const d = await api("/demo-sessions", "POST", {});
         demoId = d.id;
         setSession(d.id);
       }
       const r = await api("/scenarios/" + id, "POST", {
-        demo_id: commission || user?.role === "demo" ? demoId : null,
+        demo_id:
+          commission || ["demo", "demo_viewer"].includes(user?.role || "")
+            ? demoId
+            : null,
       });
       setResult(r);
       if (!commission && r.incidents.length) setSelected(r.incidents[0]);
@@ -368,13 +477,9 @@ export default function App() {
         <div className="login-art">
           <EmblemPair className="login-emblems" />
           <h1>
-            AegisBorder <span>SOC</span>
+            AegisBorder <span>Supper</span>
           </h1>
-          <p>
-            Интеллектуальная система защиты
-            <br />
-            Пограничной службы КНБ РК
-          </p>
+          <p>{BRAND_TAGLINE}</p>
           <div className="badge">
             <LockKeyhole size={14} /> Локальная учебная среда
           </div>
@@ -395,14 +500,16 @@ export default function App() {
             }
           }}
         >
-          <span className="eyebrow">COMMAND CENTER / 0.3</span>
+          <span className="eyebrow">
+            AegisBorder Supper / ЗАЩИЩЁННЫЙ ДОСТУП
+          </span>
           <h2>Добро пожаловать</h2>
           <p>Войдите, чтобы открыть центр управления.</p>
           <label>
             Имя пользователя
             <input
               name="username"
-              defaultValue="admin"
+              defaultValue={authOptions.data?.public_demo ? "" : "admin"}
               autoComplete="username"
               required
             />
@@ -425,6 +532,51 @@ export default function App() {
             </p>
           )}
           <small>Используйте пароль своей учебной учётной записи.</small>
+          {authOptions.data?.public_demo && (
+            <Button
+              type="button"
+              variant="outline"
+              disabled={busy}
+              onClick={() =>
+                void act(async () => {
+                  const r = await api("/auth/demo-viewer", "POST");
+                  client.clear();
+                  setSession(null);
+                  setUser(r);
+                }, "Демонстрационный просмотр открыт")
+              }
+            >
+              Открыть демонстрационный просмотр
+            </Button>
+          )}
+          {authOptions.data?.public_demo && (
+            <>
+              <hr />
+              <p>
+                Первый раз здесь? Откройте личную тренировку без регистрации.
+                Ваши учебные события будут видны только вам.
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={busy}
+                onClick={() =>
+                  void act(async () => {
+                    const r = await api("/auth/demo", "POST");
+                    client.clear();
+                    setSession(null);
+                    setUser(r);
+                  }, "Личная тренировка открыта")
+                }
+              >
+                Попробовать без регистрации
+              </Button>
+              <small>
+                Демонстрационный сеанс действует два часа. Для нового посещения
+                можно открыть новую тренировку.
+              </small>
+            </>
+          )}
           <NavLink to="/" className="login-home">
             Вернуться на главную страницу
           </NavLink>
@@ -444,36 +596,103 @@ export default function App() {
     data.error,
   ].find(Boolean);
   return (
-    <div className="shell">
+    <div
+      className={`shell ${navOpen ? "ultra-nav-open" : ""}`}
+      data-experience={technical ? "technical" : "simple"}
+    >
+      <UltraIntro />
+      <button
+        className="ultra-mobile-nav"
+        aria-label={navOpen ? "Закрыть навигацию" : "Открыть навигацию"}
+        aria-expanded={navOpen}
+        onClick={() => setNavOpen(!navOpen)}
+      >
+        {navOpen ? <X size={20} /> : <Menu size={20} />}
+      </button>
       <aside>
         <NavLink className="brand" to="/app">
           <div className="brand-icon">
             <Emblem kind="border" />
           </div>
           <div>
-            AegisBorder <strong>SuperApp</strong>
-            <small className="brand-mission">
-              Интеллектуальная система защиты Пограничной службы КНБ РК
-            </small>
+            AegisBorder <strong>Supper</strong>
+            <small className="brand-mission">{BRAND_TAGLINE}</small>
           </div>
         </NavLink>
-        <div className="nav-label">ЦЕНТР УПРАВЛЕНИЯ</div>
-        <nav>
-          {pages.map(([path, label, Icon]) => (
-            <NavLink
-              end
-              key={path}
-              to={appPath(path)}
-              aria-label={label}
-              title={label}
-              className={({ isActive }) => (isActive ? "active" : "")}
-            >
-              <Icon size={18} />
-              <span>{label}</span>
-              {path === "commission" && <span className="nav-dot" />}
-            </NavLink>
-          ))}
+        <label className="sidebar-search">
+          <Search size={16} />
+          <input
+            aria-label="Найти раздел"
+            placeholder="Найти раздел…"
+            value={navSearch}
+            onChange={(e) => setNavSearch(e.target.value)}
+          />
+        </label>
+        <nav aria-label="Разделы приложения">
+          {navigationGroups.map((group) => {
+            const links = pages.filter(
+              ([path, label]) =>
+                group.paths.includes(path) &&
+                (isAdmin ||
+                  !["users", "settings", "rule-builder"].includes(path)) &&
+                (label + " " + (explainers[path]?.description || ""))
+                  .toLocaleLowerCase("ru")
+                  .includes(navSearch.toLocaleLowerCase("ru")),
+            );
+            return links.length ? (
+              <section className="sidebar-nav-group" key={group.title}>
+                <h2>
+                  <button
+                    className="ultra-nav-group-toggle"
+                    aria-expanded={
+                      !!navSearch || !collapsedGroups.includes(group.title)
+                    }
+                    onClick={() =>
+                      setCollapsedGroups(
+                        collapsedGroups.includes(group.title)
+                          ? collapsedGroups.filter((g) => g !== group.title)
+                          : [...collapsedGroups, group.title],
+                      )
+                    }
+                  >
+                    {group.title}
+                    <ChevronRight size={11} />
+                  </button>
+                </h2>
+                {(navSearch || !collapsedGroups.includes(group.title)) &&
+                  links.map(([path, label, Icon]) => (
+                    <NavLink
+                      end
+                      key={path}
+                      to={appPath(path)}
+                      aria-label={label}
+                      title={label}
+                      className={({ isActive }) => (isActive ? "active" : "")}
+                    >
+                      <Icon size={18} />
+                      <span>{label}</span>
+                      {path === "commission" && <span className="nav-dot" />}
+                    </NavLink>
+                  ))}
+              </section>
+            ) : null;
+          })}
+          {!pages.some(([path, label]) =>
+            (label + " " + (explainers[path]?.description || ""))
+              .toLocaleLowerCase("ru")
+              .includes(navSearch.toLocaleLowerCase("ru")),
+          ) && (
+            <p className="sidebar-search-empty">
+              Раздел не найден. Попробуйте другое слово.
+            </p>
+          )}
         </nav>
+        <button
+          className="ultra-intro-replay"
+          onClick={() => window.dispatchEvent(new Event("aegis-replay-intro"))}
+        >
+          <Play size={12} /> Повторить вступление
+        </button>
         <div className="sidebar-bottom">
           <Emblem kind="knb" className="sidebar-knb" />
           <div>
@@ -485,7 +704,7 @@ export default function App() {
       <div className="workspace">
         <header>
           <div className="breadcrumbs">
-            AegisBorder SuperApp <ChevronRight size={14} /> <b>{title}</b>
+            AegisBorder Supper <ChevronRight size={14} /> <b>{title}</b>
           </div>
           <div className="row">
             <AppTools
@@ -495,6 +714,7 @@ export default function App() {
               }
             />
             <ThemeToggle />
+            <PlainLanguageHelp />
             <ModuleMenu compact />
             <span
               className={
@@ -504,7 +724,12 @@ export default function App() {
               <span className="online-dot" />{" "}
               {health.isSuccess ? "Система активна" : "Нет подключения"}
             </span>
-            <button className="mode" onClick={() => setTechnical(!technical)}>
+            <button
+              className="mode"
+              aria-pressed={!technical}
+              title="В простом режиме показаны пояснения и пошаговые подсказки"
+              onClick={() => setTechnical(!technical)}
+            >
               {technical ? "Технический режим" : "Простой режим"}
             </button>
             <button
@@ -535,19 +760,31 @@ export default function App() {
           </div>
         </header>
         <main>
+          {user.role === "demo_viewer" && (
+            <div className="ultra-viewer-banner">
+              <Shield size={16} />
+              <span>
+                Демонстрационный просмотр. Постоянные данные защищены; учебные
+                сценарии выполняются в вашем сеансе.
+              </span>
+              <NavLink to="/app/commission">Начать показ →</NavLink>
+            </div>
+          )}
+          {user.role !== "demo_viewer" && (
+            <AutomaticLocation userId={user.id} />
+          )}
           <div className="page-heading">
             <div>
               <span className="eyebrow">
-                ОПЕРАТИВНАЯ ОБСТАНОВКА / УЧЕБНЫЙ КОНТУР
+                AegisBorder Supper / ЦЕНТР КИБЕРЗАЩИТЫ
               </span>
               <h1>{title}</h1>
               {page === "commission" && (
                 <EmblemPair className="commission-emblems" />
               )}
               <p>
-                {page === "commission"
-                  ? "Проверьте возможности системы самостоятельно — шаг за шагом."
-                  : "Обнаружение, анализ и расследование на основе синтетических событий."}
+                {explainers[page]?.description ||
+                  "Обнаружение, анализ и расследование на основе учебных событий."}
               </p>
             </div>
             <div className="row">
@@ -570,197 +807,58 @@ export default function App() {
             </div>
           )}
           {loading && <div className="loading-line" />}
+          <PresenceSignal userId={user.id} />
+          {page === "" && ["demo", "demo_viewer"].includes(user.role) && <DemoWelcome />}
+          {page === "" && dashboard.isPending && (
+            <div
+              className="ultra-skeleton-grid"
+              role="status"
+              aria-label="Загрузка оперативной сводки"
+            >
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i}>
+                  <span />
+                  <b />
+                  <span />
+                </div>
+              ))}
+            </div>
+          )}
+          {page !== "" &&
+            !["commission", "help", "academy", "team"].includes(page) && (
+              <PagePrimer page={page} technical={technical} />
+            )}
           {page === "development" && <DevelopmentModules />}
+          {extendedPages.includes(page) && (
+            <React.Suspense fallback={<p role="status">Загрузка модуля…</p>}>
+              <SuperappModules
+                key={page}
+                page={page}
+                user={{ id: user.id, role: user.role }}
+              />
+            </React.Suspense>
+          )}
           {page === "workspace" && (
             <React.Suspense
               fallback={<p role="status">Загрузка рабочего пространства…</p>}
             >
-              <Workspace user={user} />
+              <Workspace
+                key={location.search}
+                user={user}
+                initialDocument={queryId(location.search, "document")}
+                initialIncident={queryId(location.search, "incident")}
+              />
             </React.Suspense>
           )}
           {page === "" && dashboard.data && (
-            <>
-              <div className="metric-grid">
-                {[
-                  [
-                    "События безопасности",
-                    dashboard.data.events,
-                    Activity,
-                    "Сохранены в базе данных",
-                  ],
-                  [
-                    "Открытые инциденты",
-                    dashboard.data.open_incidents,
-                    ShieldAlert,
-                    "Требуют проверки оператора",
-                  ],
-                  [
-                    "Максимальный риск",
-                    dashboard.data.risk,
-                    ScanLine,
-                    riskLabel(dashboard.data.risk),
-                  ],
-                  [
-                    "Учебные устройства",
-                    dashboard.data.assets,
-                    Monitor,
-                    "Синтетическая инфраструктура",
-                  ],
-                ].map(([label, value, Icon, caption]) => {
-                  const I = Icon as typeof Activity;
-                  return (
-                    <button
-                      className="metric"
-                      key={String(label)}
-                      onClick={() =>
-                        navigate(
-                          label === "События безопасности"
-                            ? "/events"
-                            : label === "Учебные устройства"
-                              ? "/assets"
-                              : "/incidents",
-                        )
-                      }
-                      aria-label={"Открыть раздел: " + label}
-                    >
-                      <div className="row between">
-                        <span>{String(label)}</span>
-                        <I size={21} />
-                      </div>
-                      <strong>
-                        {String(value)}
-                        {label === "Максимальный риск" && <small>/100</small>}
-                      </strong>
-                      <p>
-                        <span className="online-dot" />
-                        {String(caption)}
-                      </p>
-                      <span className="metric-instruction">
-                        {
-                          {
-                            "События безопасности":
-                              "Все сохранённые события: нажмите для поиска.",
-                            "Открытые инциденты":
-                              "Незакрытые предупреждения: нажмите для проверки.",
-                            "Максимальный риск":
-                              "Максимум среди открытых инцидентов: изучите причины.",
-                            "Учебные устройства":
-                              "Карточки устройств и их события: нажмите для просмотра.",
-                          }[String(label)]
-                        }{" "}
-                        <ArrowUpRight size={14} />
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="chart-grid">
-                <Panel
-                  title="Поток событий"
-                  subtitle="Последние 1 000 событий · время UTC"
-                  action={<span className="badge">Живые данные</span>}
-                >
-                  <div className="chart">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={dashboard.data.timeline}>
-                        <defs>
-                          <linearGradient id="area" x1="0" y1="0" x2="0" y2="1">
-                            <stop
-                              offset="0%"
-                              stopColor="#38BDF8"
-                              stopOpacity={0.35}
-                            />
-                            <stop
-                              offset="100%"
-                              stopColor="#38BDF8"
-                              stopOpacity={0}
-                            />
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid stroke="#23364f" vertical={false} />
-                        <XAxis dataKey="time" stroke="#8095b2" />
-                        <YAxis stroke="#8095b2" allowDecimals={false} />
-                        <Tooltip
-                          contentStyle={{
-                            background: "#15243A",
-                            border: "1px solid #28405d",
-                          }}
-                        />
-                        <Area
-                          type="monotone"
-                          dataKey="events"
-                          name="События"
-                          stroke="#38BDF8"
-                          fill="url(#area)"
-                          strokeWidth={2}
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
-                </Panel>
-                <Panel
-                  title="Состояние инцидентов"
-                  subtitle="Распределение по этапам расследования"
-                >
-                  <div className="chart">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={dashboard.data.distribution}
-                        layout="vertical"
-                      >
-                        <XAxis type="number" hide />
-                        <YAxis
-                          type="category"
-                          dataKey="name"
-                          width={125}
-                          stroke="#92a8c5"
-                          tick={{ fontSize: 11 }}
-                        />
-                        <Tooltip
-                          contentStyle={{
-                            background: "#15243A",
-                            border: "1px solid #28405d",
-                          }}
-                        />
-                        <Bar
-                          dataKey="value"
-                          name="Инциденты"
-                          fill="#38BDF8"
-                          radius={[0, 4, 4, 0]}
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </Panel>
-              </div>
-              <Panel
-                title="Инциденты, требующие внимания"
-                subtitle="Откройте карточку, чтобы увидеть причины и хронологию"
-                action={
-                  <Button
-                    variant="ghost"
-                    onClick={() => navigate("/incidents")}
-                  >
-                    Все инциденты <ArrowUpRight size={16} />
-                  </Button>
-                }
-              >
-                <IncidentTable items={(incidents.data || []).slice(0, 5)} />
-              </Panel>
-              <div className="education-banner">
-                <div>
-                  <span className="eyebrow">ПОНЯТНО ДЛЯ КАЖДОГО</span>
-                  <h2>От учебной ситуации до отчёта</h2>
-                  <p>
-                    Запустите проверку, изучите доказательства и сформируйте
-                    PDF.
-                  </p>
-                </div>
-                <Button onClick={() => navigate("/commission")}>
-                  Открыть режим комиссии <ChevronRight size={16} />
-                </Button>
-              </div>
-            </>
+            <UltraDashboard
+              dashboard={dashboard.data}
+              incidents={incidents.data || []}
+              events={eventQuery.data?.items || []}
+              health={health.data}
+              userId={user.id}
+              onIncident={setSelected}
+            />
           )}
           {["events", "incidents", "investigations"].includes(page) && (
             <>
@@ -831,7 +929,10 @@ export default function App() {
                     </div>
                   </>
                 ) : (
-                  <IncidentTable items={incidents.data || []} />
+                  <UltraIncidents
+                    items={incidents.data || []}
+                    onOpen={setSelected}
+                  />
                 )}
               </Panel>
             </>
@@ -902,6 +1003,17 @@ export default function App() {
           )}
           {page === "anomalies" && (
             <>
+              <DigitalCore
+                state={
+                  busy
+                    ? "working"
+                    : data.data?.[0]?.results?.some((r: Row) => r.anomaly)
+                      ? "anomaly"
+                      : data.data?.length
+                        ? "complete"
+                        : "idle"
+                }
+              />
               <div className="info-box">
                 <ScanLine size={24} />
                 <div>
@@ -970,169 +1082,60 @@ export default function App() {
               )}
             </>
           )}
-          {page === "assets" && (
-            <>
-              <div className="info-box">
-                <Monitor size={24} />
-                <p>
-                  Список учебных устройств. Система не подключается к реальным
-                  компьютерам и не выполняет удалённые команды.
-                </p>
-              </div>
-              <div className="scenario-grid">
-                {data.data?.map((a: Row) => (
-                  <Panel key={a.id} title={a.name} subtitle={a.kind}>
-                    <Monitor size={35} className="accent" />
-                    <p>{a.description}</p>
-                    <div className="row between">
-                      <span className="badge">{a.status}</span>
-                      <span>Критичность: {a.criticality}/100</span>
-                    </div>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        navigate("/events?q=" + encodeURIComponent(a.name));
-                      }}
-                    >
-                      Посмотреть события <ChevronRight size={16} />
-                    </Button>
-                  </Panel>
-                ))}
-              </div>
-            </>
-          )}
+          {page === "assets" && <Devices />}
+          {page === "participants" && <Participants admin={user.role === "admin"} />}
           {page === "scenarios" && (
             <TrainingLab
               scenarios={data.data || []}
               busy={busy}
-              canRun={editable}
+              canRun={editable || user.role === "demo_viewer"}
               onRun={(id) => run(id, true)}
               onOpenIncident={setSelected}
               onNavigate={navigate}
             />
           )}
+          {page === "commission" && <PresentationMode />}
           {page === "commission" && (
-            <>
-              <div className="commission-hero">
-                <div>
-                  <span className="eyebrow">ДЕМОНСТРАЦИЯ ДЛЯ КОМИССИИ</span>
-                  <h2>Проверить возможности системы</h2>
-                  <p>
-                    Выберите ситуацию. Система сохранит события, объяснит
-                    предупреждение
-                    <br />и поможет пройти расследование до PDF-отчёта.
-                  </p>
-                </div>
-                <Presentation size={62} />
-              </div>
-              <div className="steps">
-                {[
-                  "Выбрать ситуацию",
-                  "Запустить проверку",
-                  "Изучить результат",
-                  "Открыть инцидент",
-                  "Провести расследование",
-                  "Сформировать PDF",
-                ].map((s, i) => {
-                  const progress =
-                    demos.data?.find((d: Row) => d.id === session)?.progress ||
-                    0;
-                  return (
-                    <div key={s} className={progress > i ? "done" : ""}>
-                      <span>
-                        {progress > i ? <CheckCircle2 size={18} /> : i + 1}
-                      </span>
-                      <small>{s}</small>
-                    </div>
-                  );
-                })}
-              </div>
-              <Panel
-                title="Учебная ситуация"
-                subtitle={
-                  data.data?.find((s: Row) => s.id === scenario)?.description
-                }
-              >
-                <div className="row wrap">
-                  <select
-                    aria-label="Учебная ситуация"
-                    value={scenario}
-                    onChange={(e) => setScenario(e.target.value)}
-                  >
-                    {data.data?.map((s: Row) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name}
-                      </option>
-                    ))}
-                  </select>
-                  <Button
-                    disabled={busy || !editable}
-                    onClick={() => run(scenario, true)}
-                  >
-                    <Play size={16} />
-                    {result ? "Повторить проверку" : "Запустить проверку"}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    disabled={busy || !editable}
-                    onClick={() =>
-                      act(async () => {
-                        const d = await api("/demo-sessions", "POST", {});
-                        setSession(d.id);
-                        setResult(null);
-                      }, "Создан отдельный учебный сеанс")
-                    }
-                  >
-                    Новый сеанс
-                  </Button>
-                  {session && (
-                    <Button
-                      variant="destructive"
-                      disabled={!editable}
-                      onClick={() => setConfirmReset(true)}
-                    >
-                      Сбросить мои данные
-                    </Button>
-                  )}
-                </div>
-                {session && (
-                  <p>
-                    Ваш учебный сеанс: #{session}. Данные других участников
-                    сохраняются.
-                  </p>
+            <DemonstrationLanding
+              scenarios={data.data || []}
+              scenario={scenario}
+              onSelect={(id) => {
+                setScenario(id);
+                setResult(null);
+              }}
+              onRun={() => run(scenario, true)}
+              onNewSession={() =>
+                act(async () => {
+                  const demo = await api("/demo-sessions", "POST", {});
+                  setSession(demo.id);
+                  setResult(null);
+                }, "Создан отдельный учебный сеанс")
+              }
+              onReset={() => setConfirmReset(true)}
+              onIncident={setSelected}
+              canRun={editable || user.role === "demo_viewer"}
+              canReset={user.role !== "demo_viewer"}
+              busy={busy}
+              session={session}
+              progress={
+                demos.data?.find((demo: Row) => demo.id === session)
+                  ?.progress || 0
+              }
+              result={
+                result as {
+                  events: number[];
+                  incidents: number[];
+                  steps: string[];
+                  run_id: number;
+                } | null
+              }
+            >
+              <IncidentTable
+                items={(session ? incidents.data || [] : []).filter(
+                  (incident: Row) => incident.demo_id === session,
                 )}
-              </Panel>
-              {result && (
-                <Panel
-                  title="Результат проверки"
-                  subtitle={`Сохранено событий: ${result.events.length}. Связанных инцидентов: ${result.incidents.length}.`}
-                >
-                  <div className="check-list">
-                    {result.steps.map((s: string) => (
-                      <p key={s}>
-                        <CheckCircle2 size={18} />
-                        {s}
-                      </p>
-                    ))}
-                  </div>
-                  {result.incidents.map((id: number) => (
-                    <Button key={id} onClick={() => setSelected(id)}>
-                      Открыть инцидент #{id} <ArrowUpRight size={16} />
-                    </Button>
-                  ))}
-                </Panel>
-              )}
-              <Panel
-                title="Ваши результаты"
-                subtitle="Можно вернуться к расследованию после перезагрузки страницы"
-              >
-                <IncidentTable
-                  items={(incidents.data || []).filter(
-                    (i: Row) => i.demo_id === session,
-                  )}
-                />
-              </Panel>
-            </>
+              />
+            </DemonstrationLanding>
           )}
           {page === "reports" && (
             <Panel
@@ -1270,58 +1273,21 @@ export default function App() {
               {isAdmin && <AccessPolicy />}
             </>
           )}
-          {page === "help" && (
-            <>
-              <VisualGuide onNavigate={navigate} />
-              <div className="chart-grid">
-                <Panel title="Первые шаги сотрудника">
-                  <p>
-                    Нажмите на любой блок схемы выше: появится подсказка и
-                    кнопка перехода к нужному разделу. В учебном полигоне можно
-                    раскрыть каждое событие и сразу открыть расследование.
-                  </p>
-                  <Button onClick={() => navigate("/commission")}>
-                    Начать пошаговую проверку
-                  </Button>
-                </Panel>
-                <Panel title="Как понимать результаты">
-                  <p>
-                    <b>Событие</b> — зарегистрированное действие учебного
-                    устройства.
-                  </p>
-                  <p>
-                    <b>Инцидент</b> — группа событий, удовлетворяющих правилу
-                    обнаружения.
-                  </p>
-                  <p>
-                    <b>Риск</b> — объяснимая оценка 0–100; это не вероятность
-                    реальной атаки.
-                  </p>
-                  <p>
-                    <b>Аномалия</b> — отличие от синтетического профиля
-                    машинного обучения.
-                  </p>
-                  <p>
-                    Технический режим в верхней панели показывает типы событий и
-                    параметры модели.
-                  </p>
-                </Panel>
-              </div>
-            </>
-          )}
+          {page === "help" && <LearningCenter onNavigate={navigate} />}
         </main>
         <footer>
-          AegisBorder SOC · Command Center 0.3{" "}
-          <span>
-            Локальная демонстрационная система · Только синтетические данные
-          </span>
+          {BRAND_NAME} <span>{BRAND_TAGLINE}</span>
         </footer>
       </div>
       {notice && (
         <div className="toast" role="status">
           <CheckCircle2 size={19} />
           {notice}
-          <button className="icon-btn" onClick={() => setNotice("")}>
+          <button
+            className="icon-btn"
+            aria-label="Закрыть уведомление"
+            onClick={() => setNotice("")}
+          >
             ×
           </button>
         </div>
@@ -1464,7 +1430,7 @@ function IncidentDetail({
     setConclusion(item.conclusion || "");
     setChecks(item.investigation?.checklist || []);
   }, [item.id, item.conclusion, item.investigation?.checklist]);
-  const canEdit = user.role !== "observer";
+  const canEdit = !["observer", "demo_viewer"].includes(user.role);
   const operators = useQuery({
     queryKey: ["operators"],
     queryFn: () => api("/operators"),
@@ -1541,8 +1507,7 @@ function IncidentDetail({
           </label>
         </div>
       )}
-      <h3>Хронология событий</h3>
-      <EventTable items={item.events} technical={technical} />
+      <InvestigationGraph key={item.id} incident={item} technical={technical} />
       {canEdit && (
         <form
           className="row"

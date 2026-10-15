@@ -3,6 +3,7 @@ import hashlib
 import hmac
 import json
 import os
+import secrets
 import threading
 import time
 from collections import defaultdict, deque
@@ -83,9 +84,14 @@ rate_lock = threading.Lock()
 
 
 from .access import inspect as inspect_connection
+from .connectors import router as connectors_router
+from .hosting import public_origin
 from .profile_routes import router as profile_router
 from .profiles import user_record
+from .presence import router as presence_router
 from .serialization import record
+from .superapp import router as superapp_router
+from .superapp_models import WorkTask
 from .workspace import (
     add_version as workspace_version,
 )
@@ -106,6 +112,7 @@ async def lifespan(app):
             ("analyst", "Аналитик"),
             ("observer", "Наблюдатель"),
             ("demo", "Демонстрационный пользователь"),
+            ("demo_viewer", "Демонстрационный просмотр"),
         ]:
             if not db.get(Role, name):
                 db.add(Role(name=name, description=description))
@@ -145,9 +152,12 @@ async def lifespan(app):
     yield
 
 
-app = FastAPI(title="AegisBorder SOC — Command Center", version=VERSION, lifespan=lifespan)
+app = FastAPI(title="AegisBorder Supper — расследование киберинцидентов и защита информации", version=VERSION, lifespan=lifespan)
 app.include_router(profile_router)
 app.include_router(workspace_router)
+app.include_router(superapp_router)
+app.include_router(connectors_router)
+app.include_router(presence_router)
 
 
 @app.middleware("http")
@@ -174,6 +184,8 @@ async def guard(request, call_next):
             "http://127.0.0.1:5173",
             "http://localhost:5173",
         }
+        if public_origin():
+            allowed.add(public_origin())
         if origin and origin not in allowed:
             return JSONResponse({"detail": "Источник запроса не разрешён"}, status_code=403)
     response = await call_next(request)
@@ -257,7 +269,7 @@ def login(data: LoginInput, request: Request, response: Response, db=Depends(get
         token,
         httponly=True,
         samesite="strict",
-        secure=request.url.scheme == "https",
+        secure=request.url.scheme == "https" or public_origin().startswith("https://"),
         max_age=7200,
     )
     return user_record(db, user, record)
@@ -266,6 +278,57 @@ def login(data: LoginInput, request: Request, response: Response, db=Depends(get
 @app.get("/api/v1/auth/me")
 def me(user=Depends(current), db=Depends(get_db)):
     return user_record(db, user, record)
+
+
+@app.get("/api/v1/auth/options")
+def auth_options():
+    return {"public_demo": os.getenv("PUBLIC_DEMO_MODE") == "true"}
+
+
+@app.post("/api/v1/auth/demo")
+def public_demo(request: Request, response: Response, db=Depends(get_db), viewer: bool = False):
+    if os.getenv("PUBLIC_DEMO_MODE") != "true":
+        raise HTTPException(404, "Публичная демонстрация выключена")
+    info = inspect_connection(db, request)
+    if not info["network"]["allowed"]:
+        raise HTTPException(403, info["network"]["reason"])
+    stamp = time.monotonic()
+    with rate_lock:
+        queue = attempts[("public-demo", info["ip"])]
+        while queue and queue[0] < stamp - 3600:
+            queue.popleft()
+        if len(queue) >= 10:
+            raise HTTPException(429, "Слишком много новых тренировок с этого IP. Используйте текущую или повторите позже.")
+        queue.append(stamp)
+    if db.scalar(select(func.count(User.id)).where(User.role.in_(("demo", "demo_viewer")))) >= 1000:
+        raise HTTPException(503, "Демонстрационная площадка достигла лимита посетителей")
+    user = User(username="guest_" + secrets.token_hex(12), password_hash=hasher.hash(secrets.token_urlsafe(40)), role="demo_viewer" if viewer else "demo")
+    db.add(user)
+    db.flush()
+    token, session = issue(db, user)
+    db.flush()
+    # A new public workspace starts with isolated, explicitly synthetic examples.
+    demo = DemoSession(owner_id=user.id, title="Знакомство: три учебных киберинцидента", progress=3)
+    db.add(demo)
+    db.flush()
+    for scenario_id in ("bruteforce", "restricted", "usb"):
+        scenario_run = ScenarioRun(scenario=scenario_id, owner_id=user.id, demo_id=demo.id)
+        db.add(scenario_run)
+        db.flush()
+        for item in generate(scenario_id, scenario_run.id):
+            ingest(db, item, user.id, demo.id, scenario_run.id)
+    db.add(LoginRecord(user_id=user.id, username=user.username, session_id=session.id, success=True,
+                       reason="Личная публичная тренировка", user_agent=request.headers.get("user-agent", "")[:512], **info))
+    audit(db, user.id, "Открыта личная публичная тренировка")
+    db.commit()
+    response.set_cookie("aegis_session", token, httponly=True, samesite="strict",
+                        secure=request.url.scheme == "https" or public_origin().startswith("https://"), max_age=7200)
+    return user_record(db, user, record)
+
+
+@app.post("/api/v1/auth/demo-viewer")
+def public_demo_viewer(request: Request, response: Response, db=Depends(get_db)):
+    return public_demo(request, response, db, viewer=True)
 
 
 @app.post("/api/v1/auth/logout")
@@ -328,7 +391,7 @@ def dashboard(user=Depends(current), db=Depends(get_db)):
         "incidents": len(incidents),
         "open_incidents": len(open_items),
         "risk": max((i.risk for i in open_items), default=0),
-        "assets": db.scalar(select(func.count()).select_from(Asset)),
+        "assets": len({e.device for e in events}) if user.role in ("demo", "demo_viewer") else db.scalar(select(func.count()).select_from(Asset)),
         "timeline": [{"time": k, "events": v} for k, v in sorted(buckets.items())],
         "distribution": [
             {"name": s, "value": sum(i.status == s for i in incidents)}
@@ -445,7 +508,7 @@ def update(incident_id: int, data: IncidentUpdate, user=Depends(operator), db=De
             not target or not target.active or target.role not in ("admin", "analyst", "demo")
         ):
             raise HTTPException(422, "Недопустимый ответственный")
-        if user.role == "demo" and data.assignee_id not in (None, user.id):
+        if user.role in ("demo", "demo_viewer") and data.assignee_id not in (None, user.id):
             raise HTTPException(403, "Можно назначить только себя")
         inc.assignee_id = data.assignee_id
         actions.append("Изменён ответственный")
@@ -497,7 +560,7 @@ def link(incident_id: int, event_id: int, user=Depends(operator), db=Depends(get
     if (
         not event
         or event.demo_id != inc.demo_id
-        or (user.role == "demo" and event.owner_id != user.id)
+        or (user.role in ("demo", "demo_viewer") and event.owner_id != user.id)
     ):
         raise HTTPException(404, "Связанное событие не найдено")
     if not db.get(IncidentEvent, (inc.id, event.id)):
@@ -564,7 +627,7 @@ def run(scenario_id: str, data: ScenarioInput, user=Depends(operator), db=Depend
     if scenario_id not in {x[0] for x in RULES}:
         raise HTTPException(404, "Сценарий не найден")
     demo = owned_demo(db, data.demo_id, user) if data.demo_id else None
-    if user.role == "demo" and not demo:
+    if user.role in ("demo", "demo_viewer") and not demo:
         raise HTTPException(422, "Сначала создайте собственный учебный сеанс")
     run = ScenarioRun(scenario=scenario_id, owner_id=user.id, demo_id=data.demo_id)
     db.add(run)
@@ -664,6 +727,12 @@ def reset_demo(demo_id: int, user=Depends(operator), db=Depends(get_db)):
             user.id,
             f"Workspace: документ {doc.id} сохранён после сброса учебного сеанса, связь снята",
         )
+    for task in db.scalars(select(WorkTask).where(WorkTask.incident_id.in_(inc_ids)).with_for_update()):
+        task.incident_id = None
+        task.revision += 1
+        task.updated = utcnow()
+        audit(db, user.id, f"Задача #{task.id}: снята связь после сброса учебного сеанса")
+    db.flush()
     db.execute(delete(Incident).where(Incident.id.in_(inc_ids)))
     db.execute(delete(Event).where(Event.demo_id == demo_id, Event.owner_id == user.id))
     db.execute(
@@ -791,7 +860,7 @@ def change_user(user_id: int, data: UserUpdate, user=Depends(admin), db=Depends(
 
 @app.get("/api/v1/operators")
 def operators(user=Depends(current), db=Depends(get_db)):
-    if user.role == "demo":
+    if user.role in ("demo", "demo_viewer"):
         return [{"id": user.id, "username": user.username}]
     return [
         {"id": x.id, "username": x.username}
@@ -822,7 +891,7 @@ def audit_verify(user=Depends(current), db=Depends(get_db)):
 @app.get("/api/v1/audit")
 def audit_list(user=Depends(current), db=Depends(get_db)):
     query = select(Audit)
-    if user.role == "demo":
+    if user.role in ("demo", "demo_viewer"):
         query = query.where(Audit.actor_id == user.id)
     return [record(x) for x in db.scalars(query.order_by(Audit.id.desc()).limit(200))]
 
@@ -830,7 +899,7 @@ def audit_list(user=Depends(current), db=Depends(get_db)):
 @app.get("/api/v1/settings")
 def settings(user=Depends(current), db=Depends(get_db)):
     row = db.get(Setting, "system")
-    return row.value if row else {"organization": "Учебный центр AegisBorder", "simple_mode": True}
+    return row.value if row else {"organization": "AegisBorder Supper", "simple_mode": True}
 
 
 @app.put("/api/v1/settings")

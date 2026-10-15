@@ -8,6 +8,12 @@ import "./profiles.css";
 import "./superapp.css";
 import "./emblems.css";
 import "./directive.css";
+import "./motion.css";
+import "./beginner.css";
+import "./ultra.css";
+import "./corporate-identity.css";
+import { SiteAssistant } from "./components/site-assistant";
+import { EntryCheck } from "./components/entry-check";
 const CommandCenter = lazy(() => import("./command-center"));
 const Landing = lazy(() =>
   import("./components/landing").then((module) => ({
@@ -29,11 +35,12 @@ function SiteEntry() {
     <Suspense
       fallback={
         <div className="login">
-          <p role="status">Загрузка AegisBorder…</p>
+          <p role="status">Загрузка AegisBorder Supper…</p>
         </div>
       }
     >
       {location.pathname === "/" ? <Landing /> : <CommandCenter />}
+      <SiteAssistant />
     </Suspense>
   );
 }
@@ -41,7 +48,7 @@ createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <QueryClientProvider client={client}>
       <BrowserRouter>
-        <SiteEntry />
+        <EntryCheck><SiteEntry /></EntryCheck>
       </BrowserRouter>
     </QueryClientProvider>
   </React.StrictMode>,

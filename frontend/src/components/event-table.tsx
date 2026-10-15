@@ -111,8 +111,34 @@ export function EventTable({
                   </div>
                 ))}
               </div>
-              <h3>Признаки, которые проверяет алгоритм</h3>
-              <pre>{JSON.stringify(event.data.features, null, 2)}</pre>
+              <h3>Что учитывает система</h3>
+              <div className="readable-evidence">
+                {Object.entries({
+                  approved: "Действие разрешено",
+                  restricted: "Обращение к закрытым данным",
+                  critical: "Затронуты важные файлы",
+                  local_hour: "Час учебного события",
+                  files: "Число файлов",
+                  gap_seconds: "Нет сигнала от устройства, секунд",
+                  unusual: "Поведение отличается от обычного",
+                  protection_enabled: "Защита включена",
+                })
+                  .filter(([key]) => key in event.data.features)
+                  .map(([key, label]) => (
+                    <p key={key}>
+                      <b>{label}:</b>{" "}
+                      {typeof event.data.features[key] === "boolean"
+                        ? event.data.features[key]
+                          ? "Да"
+                          : "Нет"
+                        : String(event.data.features[key])}
+                    </p>
+                  ))}
+              </div>
+              <details className="editor-advanced" open={technical}>
+                <summary>Для специалиста: исходные признаки события</summary>
+                <pre>{JSON.stringify(event.data.features, null, 2)}</pre>
+              </details>
               <BlockGuide
                 title="Карточка события"
                 text="Это фактическая запись из учебной базы, которую использовали правила обнаружения."

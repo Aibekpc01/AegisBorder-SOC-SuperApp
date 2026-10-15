@@ -4,6 +4,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 export const roles: Record<string, string> = {
+  demo_viewer: "Демонстрационный просмотр",
   admin: "Администратор",
   analyst: "Аналитик",
   observer: "Наблюдатель",

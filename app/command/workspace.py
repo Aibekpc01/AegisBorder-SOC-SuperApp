@@ -168,7 +168,7 @@ class Note(BaseModel):
 
 
 def scope(query, user):
-    if user.role == "demo":
+    if user.role in ("demo", "demo_viewer"):
         return query.where(WorkspaceDocument.owner_id == user.id)
     return query.where(
         (WorkspaceDocument.demo_only.is_(False)) | (WorkspaceDocument.owner_id == user.id)
@@ -183,7 +183,7 @@ def document(db, doc_id, user):
 
 
 def can_write(row, user):
-    return user.role != "observer" and (
+    return user.role not in ("observer", "demo_viewer") and (
         user.role == "admin" or row.owner_id == user.id or row.assignee_id == user.id
     )
 
@@ -308,7 +308,7 @@ def create(data: NewDocument, user=Depends(operator), db=Depends(get_db)):
         owner_id=user.id,
         assignee_id=user.id,
         incident_id=data.incident_id,
-        demo_only=user.role == "demo" or bool(inc and inc.demo_id),
+        demo_only=user.role in ("demo", "demo_viewer") or bool(inc and inc.demo_id),
         status="Черновик",
         revision=1,
     )

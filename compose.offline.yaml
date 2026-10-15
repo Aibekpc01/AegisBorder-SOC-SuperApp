@@ -1,0 +1,4 @@
+# Use together with compose.yaml. Images are provided by package_release.py --with-images.
+services:
+  app:
+    image: aegisborder-superapp:0.3.0-local

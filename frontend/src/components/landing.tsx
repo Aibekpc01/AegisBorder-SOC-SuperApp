@@ -14,13 +14,16 @@ import {
   Network,
   Play,
   ShieldCheck,
-  Shield,
   Sparkles,
   Usb,
+  Users,
+  BookOpen,
 } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
-import { Emblem, EmblemPair, publicEmblemsEnabled } from "./emblems";
+import { EmblemPair } from "./emblems";
 import { ModuleMenu, ModuleCatalog } from "./module-menu";
+import { BRAND_NAME, BRAND_TAGLINE } from "../lib/brand";
+import { OverviewShowcase } from "./project-experience";
 
 const examples = [
   {
@@ -123,10 +126,12 @@ export function Landing() {
         <Link to="/" className="landing-brand">
           <EmblemPair className="landing-emblems" publicMode />
           <b>
-            AegisBorder<small>SuperApp / учебный контур</small>
+            {BRAND_NAME}
+            <small>РАССЛЕДОВАНИЕ И ЗАЩИТА ИНФОРМАЦИИ</small>
           </b>
         </Link>
         <nav aria-label="Разделы главной страницы">
+          <Link to="/app/team">Чат</Link>
           <a href="#capabilities">Возможности</a>
           <a href="#workflow">Как это работает</a>
           <a href="#practice">Полигон</a>
@@ -140,32 +145,37 @@ export function Landing() {
         </div>
       </header>
       <main id="landing-main">
+        <div className="landing-team-entry">
+          <Link to="/app/team">
+            <Users size={16} /> Чат
+          </Link>
+          <Link to="/app/help">
+            <BookOpen size={16} /> Учебник по всем разделам
+          </Link>
+        </div>
         <section className="landing-hero">
           <div className="hero-copy">
             <span className="landing-kicker">
-              <span className="online-dot" /> ЛОКАЛЬНАЯ ДЕМОНСТРАЦИОННАЯ
-              ПЛАТФОРМА
+              <span className="online-dot" /> ИНТЕЛЛЕКТУАЛЬНАЯ ЗАЩИТА
+              ИНФРАСТРУКТУРЫ
             </span>
             <h1>
-              AEGISBORDER
+              AegisBorder
               <br />
-              <em>SUPERAPP</em>
+              <em>Supper</em>
             </h1>
-            <p className="hero-mission">
-              Единая интеллектуальная платформа мониторинга, анализа и
-              расследования киберинцидентов
-            </p>
+            <p className="hero-mission">{BRAND_TAGLINE}</p>
             <p className="hero-description">
-              Единое пространство для обнаружения, анализа и расследования
-              киберинцидентов. От первого сигнала до понятного решения — в одном
-              интерфейсе.
+              Начните с понятного учебного примера: неизвестная флешка, ошибки
+              при входе или необычное копирование файлов. Система объяснит, что
+              заметила, а человек примет решение.
             </p>
             <a className="hero-explore" href="#capabilities">
               Изучить возможности <ArrowDown size={15} />
             </a>
             <div className="hero-actions">
               <Link className="btn btn-primary" to="/app">
-                Открыть SuperApp <ArrowRight size={17} />
+                Открыть Supper <ArrowRight size={17} />
               </Link>
               <Link className="btn btn-outline" to="/app/commission">
                 <Play size={16} /> Запустить демонстрацию
@@ -173,13 +183,13 @@ export function Landing() {
             </div>
             <div className="hero-assurances">
               <span>
-                <Check size={14} /> Синтетические данные
+                <Check size={14} /> Вымышленные учебные данные
               </span>
               <span>
-                <LockKeyhole size={14} /> Локальное хранение
+                <LockKeyhole size={14} /> Защищённый доступ
               </span>
               <span>
-                <ShieldCheck size={14} /> Доступ по ролям
+                <ShieldCheck size={14} /> Личный доступ участников
               </span>
             </div>
           </div>
@@ -187,41 +197,38 @@ export function Landing() {
             className="hero-visual"
             aria-label="Иллюстрация учебной обработки событий"
           >
-            <div className="visual-grid" />
-            <div className="visual-orbit orbit-one" />
-            <div className="visual-orbit orbit-two" />
-            <div className="shield-core">
-              {publicEmblemsEnabled ? (
-                <Emblem kind="border" className="hero-emblem" />
-              ) : (
-                <Shield size={80} />
-              )}
-              <span>AEGIS</span>
-              <small>SECURITY CORE</small>
+            <div className="ultra-public-core-heading">
+              <b>AEGIS / ЯДРО ЗАЩИТЫ</b>
+              <span>АРХИТЕКТУРА ПЛАТФОРМЫ</span>
             </div>
-            <div className="orbit-label label-events">
-              <Activity size={19} />
+            <div className="hero-emblem-stage">
+              <div className="identity-orbit" aria-hidden="true" />
+              <EmblemPair className="hero-identity-emblems" publicMode />
+              <span>Единое цифровое пространство защиты</span>
+            </div>
+            <div className="ultra-public-flow">
               <div>
-                События<small>Проверка и нормализация</small>
+                <Activity />
+                <b>Наблюдать</b>
+                <span>События и источники</span>
+              </div>
+              <div>
+                <Cpu />
+                <b>Понимать</b>
+                <span>Анализ и доказательства</span>
+              </div>
+              <div>
+                <ShieldCheck />
+                <b>Решать</b>
+                <span>Расследование и отчёт</span>
               </div>
             </div>
-            <div className="orbit-label label-analysis">
-              <Sparkles size={19} />
-              <div>
-                Анализ<small>Объяснимые причины</small>
-              </div>
-            </div>
-            <div className="orbit-label label-investigation">
-              <ShieldCheck size={19} />
-              <div>
-                Расследование<small>Решение оператора</small>
-              </div>
-            </div>
-            <span className="visual-caption">
-              СХЕМА ПЛАТФОРМЫ · НЕ РЕАЛЬНАЯ ТОПОЛОГИЯ
-            </span>
+            <p className="ultra-public-note">
+              Концептуальная схема. Оперативные показатели доступны после входа.
+            </p>
           </div>
         </section>
+        <OverviewShowcase publicMode />
         <section className="landing-preview" id="practice">
           <div className="landing-section-heading">
             <div>
@@ -384,26 +391,30 @@ export function Landing() {
             <h2>
               Архитектура для
               <br />
-              следующего этапа.
+              корпоративной среды.
             </h2>
             <p>
-              Сегодня доступны REST API, OpenAPI и WebSocket. Почтовые шлюзы,
-              внешние SIEM и цифровой двойник находятся в плане разработки;
-              подключения к служебной инфраструктуре отсутствуют.
+              События из сторонних продуктов поступают в единый процесс: приём →
+              проверка → обнаружение → расследование. Создайте приёмник в центре
+              интеграций и настройте отправку через API или корпоративный агент.
+              Почтовый анализ и цифровой двойник уже доступны локально.
             </p>
-            <a className="btn btn-outline" href="/docs">
-              Посмотреть документацию API <ArrowRight size={16} />
-            </a>
+            <Link className="btn btn-outline" to="/app/integrations">
+              Открыть центр интеграций <ArrowRight size={16} />
+            </Link>
           </div>
           <div className="integration-list">
             {[
               ["REST API / OpenAPI", "Реализовано"],
               ["WebSocket событий", "Реализовано"],
-              ["Почтовая безопасность", "В разработке"],
-              ["Внешние системы и SIEM", "Запланировано"],
-            ].map(([title, status], i) => (
+              [
+                "Почтовая безопасность и цифровой двойник",
+                "Протестировано локально",
+              ],
+              ["Приём событий Kaspersky / DLP / Microsoft 365", "API-приёмник"],
+            ].map(([title, status]) => (
               <div key={title}>
-                <span className={i < 2 ? "online-dot" : "planned-dot"} />
+                <span className="online-dot" />
                 <b>{title}</b>
                 <span>{status}</span>
               </div>
@@ -432,9 +443,8 @@ export function Landing() {
             <span className="landing-kicker">О ПРОЕКТЕ</span>
             <h2>Технологии, понятные оператору.</h2>
             <p>
-              AegisBorder — демонстрационная платформа для обучения обнаружению
-              и расследованию киберинцидентов в контексте задач Пограничной
-              службы КНБ РК.
+              {BRAND_NAME} —{" "}
+              {BRAND_TAGLINE.charAt(0).toLowerCase() + BRAND_TAGLINE.slice(1)}.
             </p>
             <p>
               Используются синтетические события. Продукт не заявляет
@@ -447,7 +457,7 @@ export function Landing() {
           </div>
           <div className="about-branding">
             <EmblemPair className="about-emblems" publicMode />
-            <strong>AEGISBORDER</strong>
+            <strong>{BRAND_NAME}</strong>
             <small>ОБУЧЕНИЕ · АНАЛИЗ · РАССЛЕДОВАНИЕ</small>
           </div>
         </section>
@@ -455,7 +465,7 @@ export function Landing() {
       <footer className="landing-footer">
         <span>
           <EmblemPair className="footer-emblems" publicMode /> AegisBorder
-          SuperApp
+          Supper
         </span>
         <p>
           Демонстрационный проект. Синтетические данные. Не является официальным
