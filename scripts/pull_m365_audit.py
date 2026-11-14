@@ -1,3 +1,6 @@
+# Назначение файла: Получает аудит Microsoft 365 и передаёт события в приложение при настроенных учётных данных.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 """One authorised Microsoft Entra audit sync; schedule externally if required."""
 
 import argparse

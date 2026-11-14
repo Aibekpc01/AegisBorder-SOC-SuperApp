@@ -1,3 +1,7 @@
+/* Назначение файла: Запускает React, подключает общие стили и провайдеры. Корневой адрес открывает главную, остальные пути передаются в CommandCenter.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 import React, { Suspense, lazy } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, useLocation } from "react-router-dom";
@@ -12,8 +16,11 @@ import "./motion.css";
 import "./beginner.css";
 import "./ultra.css";
 import "./corporate-identity.css";
+import "./design-polish.css";
+import "./presentation-accessibility.css";
 import { SiteAssistant } from "./components/site-assistant";
 import { EntryCheck } from "./components/entry-check";
+// Рабочую оболочку загружаем по необходимости, чтобы главная не ждала весь код внутренних экранов.
 const CommandCenter = lazy(() => import("./command-center"));
 const Landing = lazy(() =>
   import("./components/landing").then((module) => ({
@@ -30,12 +37,13 @@ try {
   document.documentElement.dataset.theme = "dark";
 }
 function SiteEntry() {
+  // Публичная главная и защищённые экраны имеют разные точки сборки, но общий маршрутизатор.
   const location = useLocation();
   return (
     <Suspense
       fallback={
         <div className="login">
-          <p role="status">Загрузка AegisBorder Supper…</p>
+          <p role="status">Загрузка AegisBorder Supperapp…</p>
         </div>
       }
     >

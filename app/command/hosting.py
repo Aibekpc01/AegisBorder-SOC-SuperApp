@@ -1,3 +1,6 @@
+# Назначение файла: Нормализует параметры размещения и строку подключения к базе для разных окружений.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 """Explicit origins and managed PostgreSQL URL compatibility."""
 
 import os

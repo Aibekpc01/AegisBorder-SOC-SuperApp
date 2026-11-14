@@ -1,3 +1,7 @@
+/* Назначение файла: Проверяет подсистему supper identity. Содержит проверки ожидаемого поведения, а не код рабочего сервера.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 /* global console, process, document, innerWidth, getComputedStyle */
 import { chromium, expect } from '@playwright/test';
 import { readFile, mkdir, writeFile } from 'node:fs/promises';

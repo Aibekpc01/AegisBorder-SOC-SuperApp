@@ -1,3 +1,6 @@
+# Назначение файла: Пересылает события из внешнего источника в API приложения.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 """Forward exported JSON via an Aegis receiver, using a secret from environment."""
 
 import argparse

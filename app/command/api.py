@@ -1,3 +1,6 @@
+# Назначение файла: Собирает FastAPI-приложение: запуск, вход, события, инциденты, аудит и подключение дополнительных маршрутов.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 import asyncio
 import hashlib
 import hmac
@@ -83,12 +86,20 @@ attempts = defaultdict(deque)
 rate_lock = threading.Lock()
 
 
+from .access import connection as request_connection
 from .access import inspect as inspect_connection
+from .avatars import generated_avatar
 from .connectors import router as connectors_router
+from .dlp import router as dlp_router
+from .governance import deleted, manager_lock, revoke_sessions
+from .governance import router as governance_router
 from .hosting import public_origin
+from .news import router as news_router
+from .presence import router as presence_router
 from .profile_routes import router as profile_router
 from .profiles import user_record
-from .presence import router as presence_router
+from .rbac import ROLES, operator_role_names, require_assignment, require_target, role_base
+from .security import user_manager
 from .serialization import record
 from .superapp import router as superapp_router
 from .superapp_models import WorkTask
@@ -105,15 +116,10 @@ from .workspace import (
 
 @asynccontextmanager
 async def lifespan(app):
+    # Подготовка приложения выполняется один раз при старте, а не при каждом HTTP-запросе.
     secret()
     with SessionLocal() as db:
-        for name, description in [
-            ("admin", "Администратор"),
-            ("analyst", "Аналитик"),
-            ("observer", "Наблюдатель"),
-            ("demo", "Демонстрационный пользователь"),
-            ("demo_viewer", "Демонстрационный просмотр"),
-        ]:
+        for name, (description, _, _) in ROLES.items():
             if not db.get(Role, name):
                 db.add(Role(name=name, description=description))
         db.flush()
@@ -152,23 +158,32 @@ async def lifespan(app):
     yield
 
 
-app = FastAPI(title="AegisBorder Supper — расследование киберинцидентов и защита информации", version=VERSION, lifespan=lifespan)
+app = FastAPI(title="AegisBorder Supperapp — расследование киберинцидентов и защита информации", version=VERSION, lifespan=lifespan)
 app.include_router(profile_router)
 app.include_router(workspace_router)
 app.include_router(superapp_router)
 app.include_router(connectors_router)
 app.include_router(presence_router)
+app.include_router(news_router)
+app.include_router(governance_router)
+app.include_router(dlp_router)
 
 
 @app.middleware("http")
 async def guard(request, call_next):
+    # Общая обработка запроса применяется до конкретного маршрута и после получения его ответа.
     if request.method not in ("GET", "HEAD", "OPTIONS"):
         if request.url.path.startswith("/api/") and request.url.path not in (
             "/api/v1/auth/login",
             "/api/v1/auth/logout",
         ):
             stamp = time.monotonic()
-            key = ("writes", request.client.host if request.client else "local")
+            key = ("writes", request_connection(request)["ip"])
+            # Each agent has its own quota: many endpoints can share one NAT address.
+            if request.url.path.startswith("/api/v1/dlp/agents/"):
+                parts = request.url.path.split("/")
+                if len(parts) == 7 and len(parts[5]) == 36:
+                    key = ("dlp-writes", parts[5])
             with rate_lock:
                 queue = attempts[key]
                 while queue and queue[0] < stamp - 60:
@@ -217,10 +232,12 @@ def health(db=Depends(get_db)):
 
 @app.post("/api/v1/auth/login")
 def login(data: LoginInput, request: Request, response: Response, db=Depends(get_db)):
-    key = (request.client.host if request.client else "local", data.username)
+    # Проверка учётной записи и создание сеанса сосредоточены здесь; интерфейс получает результат через API.
+    client_ip = request_connection(request)["ip"]
+    key = (client_ip, data.username)
     stamp = time.monotonic()
     with rate_lock:
-        ip_queue = attempts[("login-ip", request.client.host if request.client else "local")]
+        ip_queue = attempts[("login-ip", client_ip)]
         while ip_queue and ip_queue[0] < stamp - 60:
             ip_queue.popleft()
         if len(ip_queue) >= 30:
@@ -442,6 +459,7 @@ def events(
 
 @app.post("/api/v1/events")
 def accept(data: EventInput, user=Depends(admin), db=Depends(get_db)):
+    # Ручной приём использует тот же ingest, что и другие источники событий.
     event, incidents, duplicate = ingest(db, data.model_dump(), user.id)
     if not duplicate:
         audit(db, user.id, f"Принято синтетическое событие {event.id}")
@@ -495,6 +513,7 @@ TRANSITIONS = {
 
 @app.patch("/api/v1/incidents/{incident_id}")
 def update(incident_id: int, data: IncidentUpdate, user=Depends(operator), db=Depends(get_db)):
+    # Перед изменением инцидента проверяем права; историю действий сохраняем на сервере.
     inc = get_incident(db, incident_id, user)
     actions = []
     if data.status and data.status != inc.status:
@@ -505,7 +524,7 @@ def update(incident_id: int, data: IncidentUpdate, user=Depends(operator), db=De
     if "assignee_id" in data.model_fields_set:
         target = db.get(User, data.assignee_id) if data.assignee_id else None
         if data.assignee_id and (
-            not target or not target.active or target.role not in ("admin", "analyst", "demo")
+            not target or not target.active or role_base(target, db) not in ("admin", "analyst", "demo")
         ):
             raise HTTPException(422, "Недопустимый ответственный")
         if user.role in ("demo", "demo_viewer") and data.assignee_id not in (None, user.id):
@@ -746,6 +765,7 @@ def reset_demo(demo_id: int, user=Depends(operator), db=Depends(get_db)):
 
 @app.post("/api/v1/reports/{incident_id}")
 def make_report(incident_id: int, user=Depends(operator), db=Depends(get_db)):
+    # Отчёт строится по сохранённому инциденту и его доказательствам, а не по состоянию открытой страницы.
     inc = get_incident(db, incident_id, user)
     snapshot = detail(db, inc)
     pdf(snapshot)
@@ -804,12 +824,17 @@ def anomaly_history(user=Depends(current), db=Depends(get_db)):
 
 
 @app.get("/api/v1/users")
-def users(user=Depends(admin), db=Depends(get_db)):
-    return [user_record(db, u, record) for u in db.scalars(select(User).order_by(User.id))]
+def users(state: str = "active", user=Depends(user_manager), db=Depends(get_db)):
+    if state not in ("active", "deleted"):
+        raise HTTPException(422, "Недопустимый список пользователей")
+    return [user_record(db, u, record) for u in db.scalars(select(User).order_by(User.id))
+            if bool(deleted(db, u.id)) == (state == "deleted")]
 
 
 @app.post("/api/v1/users")
-def add_user(data: UserInput, user=Depends(admin), db=Depends(get_db)):
+def add_user(data: UserInput, user=Depends(user_manager), db=Depends(get_db)):
+    manager_lock(db, user)
+    require_assignment(user, data.role, db)
     row = User(username=data.username, password_hash=hasher.hash(data.password), role=data.role)
     db.add(row)
     db.flush()
@@ -819,6 +844,7 @@ def add_user(data: UserInput, user=Depends(admin), db=Depends(get_db)):
             full_name=data.full_name,
             department=data.department,
             position=data.position,
+            avatar_data=generated_avatar(row.id, 0),
         )
     )
     audit(db, user.id, f"Создан пользователь {row.username}, роль {row.role}")
@@ -827,12 +853,17 @@ def add_user(data: UserInput, user=Depends(admin), db=Depends(get_db)):
 
 
 @app.patch("/api/v1/users/{user_id}/active")
-def toggle_user(user_id: int, user=Depends(admin), db=Depends(get_db)):
+def toggle_user(user_id: int, user=Depends(user_manager), db=Depends(get_db)):
+    manager_lock(db, user)
     row = db.get(User, user_id)
     if not row:
         raise HTTPException(404, "Пользователь не найден")
     if row.id == user.id:
         raise HTTPException(409, "Нельзя отключить собственную учётную запись")
+    require_target(user, row, db)
+    if deleted(db, row.id):
+        raise HTTPException(409, "Сначала восстановите пользователя из корзины")
+    revoke_sessions(db, row.id)
     row.active = not row.active
     audit(db, user.id, f"Изменена активность {row.username}: {row.active}")
     db.commit()
@@ -840,13 +871,21 @@ def toggle_user(user_id: int, user=Depends(admin), db=Depends(get_db)):
 
 
 @app.patch("/api/v1/users/{user_id}")
-def change_user(user_id: int, data: UserUpdate, user=Depends(admin), db=Depends(get_db)):
+def change_user(user_id: int, data: UserUpdate, user=Depends(user_manager), db=Depends(get_db)):
+    manager_lock(db, user)
     row = db.get(User, user_id)
     if not row:
         raise HTTPException(404, "Пользователь не найден")
-    if data.role and row.id == user.id and data.role != "admin":
-        raise HTTPException(409, "Нельзя понизить собственные права")
+    if row.id != user.id:
+        require_target(user, row, db)
+    if data.role and row.id == user.id and data.role != row.role:
+        raise HTTPException(409, "Нельзя менять собственную роль")
+    if deleted(db, row.id):
+        raise HTTPException(409, "Сначала восстановите пользователя из корзины")
     if data.role:
+        if row.role != data.role:
+            require_assignment(user, data.role, db)
+            revoke_sessions(db, row.id)
         row.role = data.role
         audit(db, user.id, f"Изменена роль {row.username}: {row.role}")
     if data.password:
@@ -865,13 +904,14 @@ def operators(user=Depends(current), db=Depends(get_db)):
     return [
         {"id": x.id, "username": x.username}
         for x in db.scalars(
-            select(User).where(User.active.is_(True), User.role.in_(["admin", "analyst"]))
+            select(User).where(User.active.is_(True), User.role.in_(operator_role_names(db)))
         )
     ]
 
 
 @app.get("/api/v1/audit/verify")
 def audit_verify(user=Depends(current), db=Depends(get_db)):
+    # Заново вычисляем подписи по порядку: изменение старой записи нарушает связь с последующими.
     previous = "0" * 64
     count = 0
     for row in db.scalars(select(Audit).order_by(Audit.id)):
@@ -899,7 +939,7 @@ def audit_list(user=Depends(current), db=Depends(get_db)):
 @app.get("/api/v1/settings")
 def settings(user=Depends(current), db=Depends(get_db)):
     row = db.get(Setting, "system")
-    return row.value if row else {"organization": "AegisBorder Supper", "simple_mode": True}
+    return row.value if row else {"organization": "AegisBorder Supperapp", "simple_mode": True}
 
 
 @app.put("/api/v1/settings")
@@ -921,6 +961,7 @@ def save_settings(data: dict, user=Depends(admin), db=Depends(get_db)):
 
 @app.websocket("/api/v1/ws")
 async def stream(websocket: WebSocket):
+    # Отдельный канал обновлений; доступ к нему также требует проверки серверного сеанса.
     origin = websocket.headers.get("origin")
     allowed = {
         f"http://{websocket.headers.get('host')}",
@@ -934,7 +975,11 @@ async def stream(websocket: WebSocket):
     token = websocket.cookies.get("aegis_session", "")
     try:
         with SessionLocal() as db:
-            resolve(db, token)
+            stream_user, stream_session = resolve(db, token)
+            from .dlp_gate import access as dlp_access
+            if not dlp_access(db, stream_user, stream_session.id)["compliant"]:
+                await websocket.close(code=1008)
+                return
             if not inspect_connection(db, websocket)["network"]["allowed"]:
                 await websocket.close(code=1008)
                 return
@@ -945,7 +990,10 @@ async def stream(websocket: WebSocket):
     try:
         while True:
             with SessionLocal() as db:
-                user, _ = resolve(db, token)
+                user, session = resolve(db, token)
+                if not dlp_access(db, user, session.id)["compliant"]:
+                    await websocket.close(code=1008)
+                    return
                 if not inspect_connection(db, websocket)["network"]["allowed"]:
                     await websocket.close(code=1008)
                     return
@@ -975,6 +1023,7 @@ if (dist / "assets").exists():
 
 @app.get("/{path:path}", include_in_schema=False)
 def frontend(path: str):
+    # Для клиентского маршрута отдаём точку входа React, чтобы прямые ссылки открывались после обновления страницы.
     if path.startswith("api/"):
         raise HTTPException(404, "Маршрут API не найден")
     if (dist / "index.html").exists():

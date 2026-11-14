@@ -1,3 +1,6 @@
+# Назначение файла: Проверяет пароли и сеансы, выдаёт JWT и записывает связанную HMAC-цепочку аудита.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 import hashlib
 import hmac
 import json
@@ -13,10 +16,12 @@ from sqlalchemy import select, text
 
 from .db import get_db
 from .models import Audit, AuthSession, User, utcnow
+from .rbac import is_admin, manages_users, role_base, role_info
 
 hasher = PasswordHasher()
 
 
+# Единый секрет берём из окружения; короткий ключ отклоняем до подписи токенов и аудита.
 def secret():
     key = os.getenv("AUDIT_KEY", "")
     if len(key) < 32:
@@ -28,6 +33,7 @@ def jwt_key():
     return hmac.new(secret().encode(), b"aegis-jwt-v1", hashlib.sha256).hexdigest()
 
 
+# Проверяем введённый пароль по Argon2-хешу, не сравнивая пароль с открытым текстом.
 def verify(password, stored):
     try:
         return hasher.verify(stored, password)
@@ -35,6 +41,7 @@ def verify(password, stored):
         return False
 
 
+# Связываем запись с предыдущей HMAC-подписью. PostgreSQL-блокировка сериализует параллельную запись цепочки.
 def audit(db, user_id, action):
     if db.bind.dialect.name == "postgresql":
         db.execute(text("SELECT pg_advisory_xact_lock(8142026003)"))
@@ -46,6 +53,7 @@ def audit(db, user_id, action):
     db.add(Audit(actor_id=user_id, action=action, time=stamp, prev_hash=prev, record_hash=digest))
 
 
+# Создаём серверный сеанс и подписанный JWT. Запись в БД позволяет отозвать доступ до истечения токена.
 def issue(db, user):
     sid = secrets.token_hex(32)
     expires = utcnow() + timedelta(hours=2)
@@ -59,6 +67,7 @@ def issue(db, user):
     return token, session
 
 
+# После проверки подписи сверяем токен с БД: сеанс, пользователя, отзыв и срок действия.
 def resolve(db, token):
     try:
         payload = jwt.decode(
@@ -84,12 +93,14 @@ def resolve(db, token):
         raise HTTPException(401, "Сеанс завершён. Войдите повторно.") from None
 
 
+# Зависимость FastAPI: извлекает пользователя из запроса и применяет проверки доступа к рабочим маршрутам.
 def current(request: Request, db=Depends(get_db)):
     header = request.headers.get("authorization", "")
     token = header[7:] if header.startswith("Bearer ") else request.cookies.get("aegis_session", "")
     if not token:
         raise HTTPException(401, "Требуется вход в систему")
     user, session = resolve(db, token)
+    user._access_role = role_info(user.role, db)["base"]
     from .access import inspect
 
     assessment = inspect(db, request)
@@ -103,7 +114,7 @@ def current(request: Request, db=Depends(get_db)):
         allowed = request.method == "POST" and (
             request.url.path in (
                 "/api/v1/auth/logout", "/api/v1/demo-sessions", "/api/v1/analytics/anomalies",
-                "/api/v1/presence/heartbeat",
+                "/api/v1/presence/heartbeat", "/api/v1/presence/disconnect", "/api/v1/auth/location",
             )
             or re.fullmatch(r"/api/v1/scenarios/[a-z0-9_-]+", request.url.path)
             or re.fullmatch(r"/api/v1/reports/\d+", request.url.path)
@@ -111,17 +122,25 @@ def current(request: Request, db=Depends(get_db)):
         if not allowed:
             raise HTTPException(403, "Демонстрационный просмотр: изменение постоянных данных запрещено")
     request.state.session = session
+    from .dlp_gate import enforce
+    enforce(db, user, session, request.url.path)
     return user
 
 
 def admin(user=Depends(current)):
-    if user.role != "admin":
+    if not is_admin(user):
         raise HTTPException(403, "Требуются права администратора")
     return user
 
 
+def user_manager(user=Depends(current)):
+    if not manages_users(user):
+        raise HTTPException(403, "Требуются права управления сотрудниками")
+    return user
+
+
 def operator(user=Depends(current)):
-    if user.role not in ("admin", "analyst", "demo", "demo_viewer"):
+    if role_base(user) not in ("admin", "analyst", "demo", "demo_viewer"):
         raise HTTPException(403, "Доступ только для чтения")
     return user
 

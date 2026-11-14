@@ -1,3 +1,7 @@
-export const BRAND_NAME = "AegisBorder Supper";
+/* Назначение файла: Хранит название, слоган и общие текстовые константы бренда.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
+export const BRAND_NAME = "AegisBorder Supperapp";
 export const BRAND_TAGLINE =
   "Цифровое суперприложение для расследования киберинцидентов и защиты информации в Пограничной службе КНБ РК";

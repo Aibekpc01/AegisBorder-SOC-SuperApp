@@ -17,6 +17,7 @@ COPY app ./app
 COPY --from=frontend /frontend/dist ./app/web
 COPY migrations ./migrations
 COPY scripts ./scripts
+COPY agents ./agents
 COPY alembic.ini .
 EXPOSE 8000
 CMD ["sh","-c","alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --no-proxy-headers"]

@@ -1,3 +1,6 @@
+# Назначение файла: Хранит учебные материалы и задания для знакомства с разделами и сценариями безопасности.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 """Locally bundled introductory lessons. No external resource dependencies."""
 
 

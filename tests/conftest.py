@@ -1,8 +1,12 @@
+# Назначение файла: Проверяет подсистему conftest. Содержит проверки ожидаемого поведения, а не код рабочего сервера.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 import os
 
 os.environ["AUDIT_KEY"] = "test-key-only-not-production-" + "x" * 32
 os.environ["ADMIN_PASSWORD"] = "test-admin-password-123"
 os.environ["DATABASE_URL"] = "sqlite://"
+os.environ["DLP_ENFORCE"] = "false"  # Enforcement has explicit end-to-end coverage.
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, event

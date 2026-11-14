@@ -1,3 +1,7 @@
+/* Назначение файла: Собирает входное событие через понятную пользователю форму.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 import { useState } from "react";
 import {
   buildTrainingEvents,

@@ -1,3 +1,6 @@
+# Назначение файла: Сопоставляет события с правилами, временными окнами и порогами; создаёт предупреждения и связывает доказательства с инцидентами.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 """Корреляция фактических событий: окна, пороги, дедупликация и объяснения."""
 
 from datetime import timedelta, timezone
@@ -8,6 +11,7 @@ from .models import Alert, Event, Incident, IncidentEvent, Rule
 from .schemas import EventInput
 
 
+# Проверяет признаки одного события. Подсчёт похожих событий во временном окне выполняется отдельно.
 def predicate(rule, event):
     f = event.features
     if rule.id == "night-login":
@@ -39,6 +43,7 @@ def predicate(rule, event):
     return True
 
 
+# Для каждого включённого правила собираем доказательства в его окне и сравниваем число совпадений с порогом.
 def analyze(db, event):
     candidates = db.scalars(select(Rule).where(Rule.enabled.is_(True))).all()
     created = []
@@ -163,6 +168,7 @@ def analyze(db, event):
     return created
 
 
+# Общий вход события в детектирование: нормализация, сохранение и запуск анализа выполняются в одном серверном контуре.
 def ingest(db, data, owner_id, demo_id=None, run_id=None):
     normalized = EventInput.model_validate(data)
     if db.bind.dialect.name == "postgresql":

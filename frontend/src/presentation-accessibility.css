@@ -1,0 +1,90 @@
+/* Shared light-theme surfaces and text must stay readable on presentation screens. */
+:root[data-theme="light"] {
+  --brand-gold: #78551a;
+  --ultra-violet: #78551a;
+  --ultra-cyan: #006078;
+  --sa-accent: #006078;
+  --muted: #40546b;
+  --sa-muted: #40546b;
+  --panel: #ffffff;
+}
+:root[data-theme="light"] .shell :is(.sidebar-nav-group h2, .ultra-nav-group-toggle),
+:root[data-theme="light"] .workspace > footer,
+:root[data-theme="light"] .workspace > footer span {
+  color: var(--muted);
+}
+:root[data-theme="light"] .shell :is(.btn-primary, .btn-primary:hover) {
+  background: #006078;
+  color: #ffffff;
+}
+:root[data-theme="light"] .shell .btn-primary :is(span, small) {
+  color: inherit;
+}
+:root[data-theme="light"] .shell .btn-ghost {
+  color: #006078;
+}
+:root[data-theme="light"] .shell :is(
+  .dlp-card, .dlp-metrics article, .connection-cards > div, .policy-option,
+  .info-box, .lab-scenario, .lab-flow button, .presence-hero, .people-hero, .access-hero,
+  .demo-welcome, .education-banner, .learning-slide-stage
+) {
+  background: var(--surface);
+  color: var(--ultra-text);
+  border-color: var(--line);
+}
+:root[data-theme="light"] .shell .lab-scenario:is(.selected, :hover) {
+  background: #e4f0f5;
+  border-color: #006078;
+}
+:root[data-theme="light"] .shell :is(
+  .info-box b, .rule-metrics b, .lab-task b, .connection-cards strong, .policy-option b
+) {
+  color: var(--ultra-text);
+}
+:root[data-theme="light"] .shell :is(.rule-metrics > span, .lab-step-caption) {
+  color: var(--muted);
+}
+:root[data-theme="light"] .shell :is(
+  .block-explain-button, .experience-section-title > span, .team-avatar,
+  .supper-news-grid a > span, .presence-avatar, .risk.medium
+) {
+  color: #006078;
+}
+:root[data-theme="light"] .shell .presence-badge.is-online {
+  color: #00624b;
+  background: #e6f4ed;
+}
+:root[data-theme="light"] .shell .presence-badge.is-offline {
+  color: #40546b;
+  background: #eaf0f6;
+}
+:root[data-theme="light"] .shell .access-tabs [aria-pressed="true"] {
+  color: #006078;
+  background: #e4f0f5;
+}
+:root[data-theme="light"] .shell .learning-slide-number {
+  color: var(--muted);
+  opacity: 1;
+}
+:root[data-theme="light"] .shell :is(h1, h2) em {
+  color: #006078;
+}
+:root[data-theme="light"] .shell :is(
+  .supper-command-hero, .supper-story, .experience-hero, .experience-banner,
+  .learning-hero, .demo-session-card
+) {
+  background: linear-gradient(135deg, #f7fbff, #e4f0f5);
+  color: var(--ultra-text);
+  border-color: var(--line);
+}
+:root[data-theme="light"] .shell :is(.supper-command-hero, .supper-story) :is(p, li, small) {
+  color: var(--muted);
+}
+:root[data-theme="light"] .shell :is(.supper-hero-core, .supper-orbit) {
+  color: #006078;
+  filter: none;
+}
+.team-member-list:focus-visible {
+  outline: 2px solid var(--sa-accent);
+  outline-offset: 4px;
+}

@@ -1,3 +1,6 @@
+# Назначение файла: Изменение схемы БД: 008_presence. Применяется Alembic в порядке связей revision/down_revision.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 """Persistent website connection history, independent of synthetic inventory."""
 import sqlalchemy as sa
 from alembic import op

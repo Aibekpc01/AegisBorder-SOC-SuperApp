@@ -1,3 +1,7 @@
+/* Назначение файла: Проверяет подсистему local guide. Содержит проверки ожидаемого поведения, а не код рабочего сервера.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 import { describe, expect, it } from "vitest";
 import { localGuideAnswer, siteTour } from "./local-guide";
 

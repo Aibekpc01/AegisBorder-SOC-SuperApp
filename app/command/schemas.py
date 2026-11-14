@@ -1,9 +1,12 @@
+# Назначение файла: Проверяет входные JSON-данные через Pydantic до выполнения серверной логики.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 from datetime import datetime
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field, field_validator
 
-RoleName = Literal["admin", "analyst", "observer", "demo", "demo_viewer"]
+RoleName = Annotated[str, Field(min_length=3, max_length=30, pattern=r"^[a-z][a-z0-9_]*$")]
 
 
 class LoginInput(BaseModel):

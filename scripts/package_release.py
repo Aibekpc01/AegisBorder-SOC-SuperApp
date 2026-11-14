@@ -1,3 +1,6 @@
+# Назначение файла: Собирает поставку приложения по разрешённому списку файлов и добавляет сведения для проверки комплекта.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 """Package only allowlisted source/runtime files; never include local data or secrets."""
 
 import argparse

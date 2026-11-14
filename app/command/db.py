@@ -1,3 +1,6 @@
+# Назначение файла: Создаёт подключение SQLAlchemy и выдаёт отдельную сессию БД каждому запросу. Локально используется SQLite, на сервере — PostgreSQL.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 import os
 
 from sqlalchemy import create_engine
@@ -19,6 +22,7 @@ engine = create_engine(
 SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
 
 
+# Сессия живёт в пределах запроса; with закрывает соединение и при исключении.
 def get_db():
     with SessionLocal() as db:
         yield db

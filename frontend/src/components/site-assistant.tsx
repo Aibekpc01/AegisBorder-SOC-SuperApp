@@ -1,3 +1,7 @@
+/* Назначение файла: Показывает помощника по сайту и ответы на вопросы о работе разделов.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -49,7 +53,7 @@ function pageBlocks(page: string): Block[] {
     "Назначение страницы",
     guide?.description || siteTour[0].text,
     guide?.steps.join("\n") ||
-      "Нажмите «Открыть Supper», чтобы перейти к рабочей панели.",
+      "Нажмите «Открыть Supperapp», чтобы перейти к рабочей панели.",
   );
   add(
     document.querySelector(".first-visit"),

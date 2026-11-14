@@ -1,3 +1,7 @@
+/* Назначение файла: Общий компонент кнопки с едиными вариантами оформления.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";

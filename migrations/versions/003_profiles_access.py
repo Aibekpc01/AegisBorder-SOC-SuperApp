@@ -1,3 +1,6 @@
+# Назначение файла: Изменение схемы БД: 003_profiles_access. Применяется Alembic в порядке связей revision/down_revision.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 """Профили, безопасные фото и история адресов входа."""
 
 import sqlalchemy as sa

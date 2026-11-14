@@ -1,3 +1,6 @@
+# Назначение файла: Подготавливает исходники для размещения на Render.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 """Export allowlisted source for GitHub/Render, excluding secrets and runtime data."""
 import zipfile
 

@@ -1,3 +1,7 @@
+/* Назначение файла: Собирает рабочее пространство расследования: документы, записи, совместную работу и редактирование.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { EditorContent, useEditor, type JSONContent } from "@tiptap/react";
@@ -43,11 +47,15 @@ export function Workspace({
     [creation, setCreation] = useState(false),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
+  const [state, setState] = useState("active");
+  const [pending, setPending] = useState<{ doc: Row; action: string } | null>(
+    null,
+  );
   const docs = useQuery({
-    queryKey: ["documents", search, initialIncident],
+    queryKey: ["documents", search, initialIncident, state],
     queryFn: () =>
       api(
-        `${base}?q=${encodeURIComponent(search)}${initialIncident ? `&incident_id=${initialIncident}` : ""}`,
+        `${base}?state=${state}&q=${encodeURIComponent(search)}${initialIncident ? `&incident_id=${initialIncident}` : ""}`,
       ),
   });
   const templates = useQuery({
@@ -94,6 +102,22 @@ export function Workspace({
             text="Материалы расследования сохраняются в базе. Учебные документы доступны только владельцу, общие — согласно роли."
             steps="Создайте документ из шаблона. Откройте карточку, заполните текст, свяжите с инцидентом и отправьте на проверку. Автосохранение создаёт версии; зелёная отметка подтверждает сохранение."
           />
+          <div className="row wrap">
+            {[
+              ["active", "В работе"],
+              ["archived", "Архив"],
+              ["deleted", "Корзина"],
+            ].map(([key, label]) => (
+              <Button
+                key={key}
+                variant="outline"
+                aria-pressed={state === key}
+                onClick={() => setState(key)}
+              >
+                {label}
+              </Button>
+            ))}
+          </div>
           {docs.isPending ? (
             <p role="status">Загрузка документов…</p>
           ) : docs.error ? (
@@ -101,30 +125,75 @@ export function Workspace({
           ) : (
             <div className="document-grid">
               {docs.data?.map((doc: Row) => (
-                <button
-                  className="document-card"
-                  key={doc.id}
-                  onClick={() => setSelected(doc.id)}
-                >
-                  <div className="row between">
-                    <FileText size={24} />
-                    <span className="badge">{doc.status}</span>
+                <article key={doc.id} className="supper-document-item">
+                  <button
+                    className="document-card"
+                    key={doc.id}
+                    onClick={() => setSelected(doc.id)}
+                  >
+                    <div className="row between">
+                      <FileText size={24} />
+                      <span className="badge">{doc.status}</span>
+                    </div>
+                    <h2>{doc.title}</h2>
+                    <p>
+                      {doc.incident_id
+                        ? `Инцидент #${doc.incident_id}`
+                        : "Без связи с инцидентом"}
+                    </p>
+                    <small>
+                      Версия {doc.revision} · {date(doc.updated)}
+                    </small>
+                    <span className="document-access">
+                      {doc.demo_only
+                        ? "Личный учебный документ"
+                        : "Рабочий материал"}
+                    </span>
+                  </button>
+                  <div className="row wrap">
+                    <a
+                      className="btn btn-outline"
+                      href={`${"/api/v1" + base}/${doc.id}/export`}
+                    >
+                      Скачать текст
+                    </a>
+                    {doc.can_manage && (
+                      <>
+                        {state === "active" ? (
+                          <Button
+                            variant="outline"
+                            onClick={() =>
+                              setPending({ doc, action: "archive" })
+                            }
+                          >
+                            В архив
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            onClick={() =>
+                              setPending({ doc, action: "restore" })
+                            }
+                          >
+                            Восстановить
+                          </Button>
+                        )}
+                        {state !== "deleted" &&
+                          !doc.incident_id &&
+                          doc.status !== "Утверждён" && (
+                            <Button
+                              variant="outline"
+                              onClick={() =>
+                                setPending({ doc, action: "delete" })
+                              }
+                            >
+                              В корзину
+                            </Button>
+                          )}
+                      </>
+                    )}
                   </div>
-                  <h2>{doc.title}</h2>
-                  <p>
-                    {doc.incident_id
-                      ? `Инцидент #${doc.incident_id}`
-                      : "Без связи с инцидентом"}
-                  </p>
-                  <small>
-                    Версия {doc.revision} · {date(doc.updated)}
-                  </small>
-                  <span className="document-access">
-                    {doc.demo_only
-                      ? "Личный учебный документ"
-                      : "Рабочий материал"}
-                  </span>
-                </button>
+                </article>
               ))}
               {docs.data?.length === 0 && (
                 <div className="empty">
@@ -221,6 +290,49 @@ export function Workspace({
           </Button>
           {error && <p role="alert">{error}</p>}
         </form>
+      </Dialog>
+      <Dialog
+        title="Управление документом"
+        open={pending !== null}
+        onClose={() => !busy && setPending(null)}
+      >
+        {pending && (
+          <>
+            <h3>{pending.doc.title}</h3>
+            <p>
+              {pending.action === "delete"
+                ? "Документ переместится в корзину. Его можно восстановить; версии сохранятся."
+                : pending.action === "archive"
+                  ? "Документ останется доступен в архиве. Для редактирования его нужно восстановить."
+                  : "Документ вернётся в рабочий список."}
+            </p>
+            {error && <p role="alert">{error}</p>}
+            <Button
+              disabled={busy}
+              onClick={async () => {
+                setBusy(true);
+                setError("");
+                try {
+                  await api(`${base}/${pending.doc.id}/lifecycle`, "POST", {
+                    action: pending.action,
+                    revision: pending.doc.revision,
+                  });
+                  await client.invalidateQueries({ queryKey: ["documents"] });
+                  await client.invalidateQueries({
+                    queryKey: ["document", pending.doc.id],
+                  });
+                  setPending(null);
+                } catch (e) {
+                  setError((e as Error).message);
+                } finally {
+                  setBusy(false);
+                }
+              }}
+            >
+              Подтвердить
+            </Button>
+          </>
+        )}
       </Dialog>
     </section>
   );

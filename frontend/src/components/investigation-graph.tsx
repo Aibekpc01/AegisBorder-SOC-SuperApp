@@ -1,3 +1,7 @@
+/* Назначение файла: Отображает связи объектов расследования в виде графа.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";

@@ -1,3 +1,7 @@
+/* Назначение файла: Отображает обзор состояния SOC и переходы к разделам, которым требуется внимание.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -419,7 +423,7 @@ export function UltraDashboard({
           </div>
           <p>
             Состояние отдельных внешних подключений — в{" "}
-            <Link to="/app/integrations">центре интеграций ↗</Link>
+            <Link className="ultra-inline-link" to="/app/integrations">центре интеграций ↗</Link>
           </p>
         </div>,
         "Только подтверждённые ответы сервера",

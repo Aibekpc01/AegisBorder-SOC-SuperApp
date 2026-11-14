@@ -1,3 +1,7 @@
+/* Назначение файла: Настройка инструментов разработки, сборки или проверки проекта.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";

@@ -1,3 +1,6 @@
+# Назначение файла: Проверяет подсистему hosting. Содержит проверки ожидаемого поведения, а не код рабочего сервера.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 import pytest
 
 from app.command.hosting import database_url, public_origin

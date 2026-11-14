@@ -1,3 +1,6 @@
+# Назначение файла: Восстанавливает административный доступ через служебную команду.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 """Run locally by the machine operator after stopping the application."""
 
 import argparse

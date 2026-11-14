@@ -1,3 +1,6 @@
+# Назначение файла: Собирает локальную поставку приложения через PowerShell.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 Push-Location (Join-Path $projectRoot 'frontend')

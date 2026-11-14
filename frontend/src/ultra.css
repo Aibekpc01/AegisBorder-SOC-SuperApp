@@ -1,4 +1,8 @@
-/* AegisBorder Supper — shared visual contract. All visualizations use API data. */
+/* Назначение файла: Стили ultra: задают внешний вид соответствующих классов и адаптацию экрана. Применяются через импорты интерфейса.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
+/* AegisBorder Supperapp — shared visual contract. All visualizations use API data. */
 :root,
 :root[data-theme="dark"] {
   --ultra-bg: #0b1424;
@@ -843,6 +847,10 @@ textarea:focus {
   max-height: 470px;
   display: block;
   overflow: hidden;
+}
+.ultra-inline-link {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
 }
 .ultra-network-node {
   cursor: pointer;

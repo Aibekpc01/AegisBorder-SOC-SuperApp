@@ -1,0 +1,161 @@
+/* Назначение файла: Стили governance: задают внешний вид соответствующих классов и адаптацию экрана. Применяются через импорты интерфейса.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
+.access-hero {
+  height: auto;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  justify-content: space-between;
+  background:
+    radial-gradient(ellipse at right top, #32ae9f20, transparent),
+    var(--sa-surface);
+  padding: 28px;
+  border: 1px solid var(--sa-border);
+  border-radius: 20px;
+  margin-bottom: 20px;
+  position: static;
+  backdrop-filter: none;
+}
+.access-hero h2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 29px;
+}
+.access-hero p {
+  color: var(--sa-muted);
+  line-height: 1.7;
+  max-width: 750px;
+}
+.access-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 20px 0;
+}
+.access-tabs button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: var(--sa-surface);
+  border: 1px solid var(--sa-border);
+  padding: 13px 18px;
+  border-radius: 12px;
+  color: var(--sa-text);
+}
+.access-tabs [aria-pressed="true"] {
+  background: #33b8aa1a;
+  border-color: #43bcac;
+  color: #56d0be;
+}
+.role-grid,
+.access-shortcuts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 16px;
+  margin: 22px 0;
+}
+.role-grid > article,
+.access-shortcuts > a {
+  padding: 22px;
+  border: 1px solid var(--sa-border);
+  border-radius: 16px;
+  background: var(--sa-surface);
+  color: var(--sa-text);
+  text-decoration: none;
+}
+.role-grid p,
+.access-shortcuts p {
+  font-size: 13px;
+  line-height: 1.75;
+  color: var(--sa-muted);
+}
+.role-grid small {
+  display: block;
+  margin-bottom: 15px;
+}
+.access-history {
+  display: grid;
+  gap: 12px;
+  max-height: 500px;
+  overflow: auto;
+}
+.access-history article {
+  border-left: 2px solid #40baaa;
+  padding: 10px 18px;
+  background: var(--sa-surface);
+}
+.avatar-picker {
+  margin: 20px 0;
+  padding: 18px;
+  border: 1px solid var(--sa-border);
+  border-radius: 16px;
+}
+.avatar-options {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin: 15px 0;
+}
+.avatar-options button {
+  padding: 5px;
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: 16px;
+}
+.avatar-options button:hover,
+.avatar-options [aria-pressed="true"] {
+  border-color: #50c4ae;
+}
+.avatar-options img {
+  width: 100%;
+  max-width: 112px;
+  border-radius: 14px;
+}
+.user-trash-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.access-hero,
+.role-grid > article {
+  animation: access-enter 0.35s ease-out;
+}
+@keyframes access-enter {
+  from {
+    opacity: 0;
+    transform: translateY(9px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .access-hero,
+  .role-grid > article {
+    animation: none;
+  }
+}
+@media (max-width: 600px) {
+  .access-hero {
+    display: block;
+    padding: 20px;
+  }
+  .access-hero h2 {
+    font-size: 24px;
+  }
+  .access-tabs button {
+    flex: 1;
+    font-size: 12px;
+    padding: 12px;
+  }
+  .avatar-options {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 5px;
+  }
+}
+
+.role-grid code{overflow-wrap:anywhere}.agent-plan{padding:24px;margin:24px 0;border:1px solid var(--sa-border);border-radius:18px;background:radial-gradient(ellipse at right,#38b3a414,transparent),var(--sa-surface)}.agent-plan p{color:var(--sa-muted);line-height:1.75}

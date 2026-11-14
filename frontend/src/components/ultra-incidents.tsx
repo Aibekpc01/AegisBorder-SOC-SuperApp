@@ -1,3 +1,7 @@
+/* Назначение файла: Отображает инциденты, их состояние и доступные действия оператора.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 import { ArrowUpRight, Clock3, Monitor, ShieldAlert } from "lucide-react";
 import { type Row } from "../api";
 import { date, riskLabel } from "../lib/utils";

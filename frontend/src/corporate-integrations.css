@@ -1,3 +1,7 @@
+/* Назначение файла: Стили corporate-integrations: задают внешний вид соответствующих классов и адаптацию экрана. Применяются через импорты интерфейса.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 .corporate-integrations {
   min-width: 0;
   margin-bottom: 28px;

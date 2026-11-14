@@ -1,8 +1,11 @@
+# Назначение файла: Проверяет подсистему presence. Содержит проверки ожидаемого поведения, а не код рабочего сервера.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 from datetime import timedelta
 
 from sqlalchemy import select
 
-from app.command.models import SiteVisit, User, Incident, utcnow
+from app.command.models import Incident, SiteVisit, User, utcnow
 
 
 def test_devices_persist_and_expire(admin):

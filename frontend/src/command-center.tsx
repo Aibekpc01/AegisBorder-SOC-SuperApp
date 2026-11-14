@@ -1,5 +1,9 @@
+/* Назначение файла: Собирает защищённую оболочку, вход, навигацию и рабочие экраны. Учитывает состояние сеанса и требования DLP.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 import React, { useEffect, useState } from "react";
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Shield,
@@ -22,7 +26,6 @@ import {
   ChevronRight,
   Play,
   CheckCircle2,
-  Download,
   RefreshCw,
   LockKeyhole,
   Layers,
@@ -38,7 +41,6 @@ import "./redesign.css";
 import "./profiles.css";
 import { BlockGuide } from "./components/block-guide";
 import {
-  UsersWorkspace,
   ProfileEditor,
   UserAvatar,
   MyConnection,
@@ -51,7 +53,7 @@ import {
   LearningCenter,
 } from "./components/project-experience";
 import { ThemeToggle } from "./components/theme-toggle";
-import { AppTools, DevelopmentModules } from "./components/app-tools";
+import { AppTools } from "./components/app-tools";
 import { appPath, appPage, queryId, extendedPages } from "./lib/routes";
 import { Emblem, EmblemPair } from "./components/emblems";
 import { ModuleMenu } from "./components/module-menu";
@@ -68,7 +70,24 @@ import {
   PresentationMode,
 } from "./components/ultra-visuals";
 import "./ultra.css";
-import { PresenceSignal, Participants, Devices, DemoWelcome } from "./components/presence-workspace";
+import {
+  PresenceSignal,
+  Participants,
+  Devices,
+  DemoWelcome,
+} from "./components/presence-workspace";
+import {
+  CyberNews,
+  DashboardWelcome,
+  ExperienceSlides,
+  PersonalExperience,
+  ReportsCenter,
+  ServiceWorkflow,
+} from "./components/supper-experience";
+import { DlpRequired } from "./components/dlp-required";
+import { proveLocalDlp } from "./lib/dlp-proof";
+import { DlpWorkspace } from "./components/dlp-workspace";
+import { AccessConsole } from "./components/governance-console";
 import { AutomaticLocation } from "./components/automatic-location";
 const Workspace = React.lazy(() =>
   import("./components/workspace").then((module) => ({
@@ -82,6 +101,7 @@ const SuperappModules = React.lazy(() =>
 );
 
 const pages = [
+  ["dlp", "Aegis DLP", ShieldAlert],
   ["", "Главная панель", LayoutDashboard],
   ["events", "Мониторинг событий", Activity],
   ["incidents", "Центр инцидентов", ShieldAlert],
@@ -98,8 +118,8 @@ const pages = [
   ["help", "Справка и обучение", BookOpen],
   ["commission", "Демонстрация проекта", Presentation],
   ["team", "Чат", Users],
-  ["participants", "Участники", Users],
-  ["development", "Развитие Supper", Layers],
+  ["participants", "Сотрудники", Users],
+  ["development", "Развитие Supperapp", Layers],
   ["assistant", "Aegis AI", BrainCircuit],
   ["mail", "Почтовая безопасность", ShieldAlert],
   ["m365", "Microsoft 365 Monitor", Monitor],
@@ -122,11 +142,18 @@ const navigationGroups = [
   },
   {
     title: "Работа и результаты",
-    paths: ["workspace", "tasks", "team", "participants", "reports", "security-analytics"],
+    paths: [
+      "workspace",
+      "tasks",
+      "team",
+      "participants",
+      "reports",
+      "security-analytics",
+    ],
   },
   {
     title: "Устройства и источники",
-    paths: ["assets", "twin", "m365", "integrations"],
+    paths: ["assets", "dlp", "twin", "m365", "integrations"],
   },
   {
     title: "Правила и управление",
@@ -253,8 +280,33 @@ export default function App() {
       window.removeEventListener("keydown", shortcuts);
     };
   }, [routerNavigate, user]);
-  const editable = !!user && !["observer", "demo_viewer"].includes(user.role),
-    isAdmin = user?.role === "admin";
+  const editable =
+      !!user &&
+      !["observer", "demo_viewer"].includes(user.access_role || user.role),
+    isAdmin = (user?.access_role || user?.role) === "admin";
+  const dlpAccess = useQuery<Row>({
+    queryKey: ["dlp-access", user?.id],
+    queryFn: () => api("/dlp/access"),
+    enabled: !!user,
+    refetchInterval: 5000,
+    retry: false,
+  });
+  const workAllowed = !!user && dlpAccess.data?.compliant === true;
+  useEffect(() => {
+    const required = () => {
+      void client.invalidateQueries({ queryKey: ["dlp-access"] });
+    };
+    window.addEventListener("aegis-dlp-required", required);
+    return () => window.removeEventListener("aegis-dlp-required", required);
+  }, [client]);
+  useEffect(() => {
+    if (!user || !dlpAccess.data?.required || !workAllowed) return;
+    const refresh = () => {
+      void proveLocalDlp().catch(() => {});
+    };
+    const timer = window.setInterval(refresh, 30000);
+    return () => window.clearInterval(timer);
+  }, [user, workAllowed, dlpAccess.data?.required]);
   useEffect(() => {
     api("/auth/me")
       .then(setUser)
@@ -280,7 +332,7 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [notice]);
   useEffect(() => {
-    if (!user) return;
+    if (!user || !workAllowed) return;
     let socket: WebSocket | undefined,
       timer: ReturnType<typeof setTimeout>,
       stopped = false,
@@ -303,7 +355,7 @@ export default function App() {
       clearTimeout(timer);
       socket?.close();
     };
-  }, [user, client]);
+  }, [user, client, workAllowed]);
   async function act(
     work: () => Promise<any>,
     message = "Изменения сохранены",
@@ -324,7 +376,7 @@ export default function App() {
   const health = useQuery({
     queryKey: ["health"],
     queryFn: () => api("/health"),
-    enabled: !!user,
+    enabled: workAllowed,
     refetchInterval: 15000,
   });
   const authOptions = useQuery({
@@ -334,7 +386,7 @@ export default function App() {
   const preferences = useQuery({
     queryKey: ["preferences"],
     queryFn: () => api("/settings"),
-    enabled: !!user,
+    enabled: workAllowed,
   });
   useEffect(() => {
     if (preferences.data) setTechnical(!preferences.data.simple_mode);
@@ -342,7 +394,7 @@ export default function App() {
   const dashboard = useQuery({
     queryKey: ["dashboard"],
     queryFn: () => api("/dashboard"),
-    enabled: !!user && page === "",
+    enabled: workAllowed && page === "",
   });
   const eventQuery = useQuery({
     queryKey: ["events", q, filter, offset],
@@ -350,7 +402,8 @@ export default function App() {
       api(
         `/events?q=${encodeURIComponent(q)}&severity=${encodeURIComponent(filter)}&offset=${offset}`,
       ),
-    enabled: !!user && (page === "events" || page === "" || page === "assets"),
+    enabled:
+      workAllowed && (page === "events" || page === "" || page === "assets"),
   });
   const incidents = useQuery({
     queryKey: ["incidents", q, filter],
@@ -359,13 +412,13 @@ export default function App() {
         `/incidents?q=${encodeURIComponent(q)}&status=${encodeURIComponent(filter)}`,
       ),
     enabled:
-      !!user &&
+      workAllowed &&
       ["", "incidents", "investigations", "commission"].includes(page),
   });
   const details = useQuery({
     queryKey: ["incident", selected],
     queryFn: () => api("/incidents/" + selected),
-    enabled: !!user && selected !== null,
+    enabled: workAllowed && selected !== null,
   });
   const paths: Record<string, string> = {
     analysis: "/detection-rules",
@@ -381,17 +434,17 @@ export default function App() {
   const data = useQuery({
     queryKey: ["page", page],
     queryFn: () => api(paths[page]),
-    enabled: !!user && !!paths[page] && (page !== "users" || !!isAdmin),
+    enabled: workAllowed && !!paths[page] && (page !== "users" || !!isAdmin),
   });
   const demos = useQuery({
     queryKey: ["demo-sessions"],
     queryFn: () => api("/demo-sessions"),
-    enabled: !!user && ["commission", "scenarios"].includes(page),
+    enabled: workAllowed && ["commission", "scenarios"].includes(page),
   });
   const integrity = useQuery({
     queryKey: ["integrity"],
     queryFn: () => api("/audit/verify"),
-    enabled: !!user && page === "audit",
+    enabled: workAllowed && page === "audit",
   });
   useEffect(() => {
     if (demos.data?.length && !session) setSession(demos.data[0].id);
@@ -477,7 +530,7 @@ export default function App() {
         <div className="login-art">
           <EmblemPair className="login-emblems" />
           <h1>
-            AegisBorder <span>Supper</span>
+            AegisBorder <span>Supperapp</span>
           </h1>
           <p>{BRAND_TAGLINE}</p>
           <div className="badge">
@@ -501,7 +554,7 @@ export default function App() {
           }}
         >
           <span className="eyebrow">
-            AegisBorder Supper / ЗАЩИЩЁННЫЙ ДОСТУП
+            AegisBorder Supperapp / ЗАЩИЩЁННЫЙ ДОСТУП
           </span>
           <h2>Добро пожаловать</h2>
           <p>Войдите, чтобы открыть центр управления.</p>
@@ -583,6 +636,32 @@ export default function App() {
         </form>
       </div>
     );
+  if (!dlpAccess.data)
+    return (
+      <div className="login">
+        <h1>Aegis DLP</h1>
+        <p>
+          {dlpAccess.error
+            ? dlpAccess.error.message
+            : "Проверяем требования защиты устройства"}
+        </p>
+        <button className="btn btn-primary" onClick={() => dlpAccess.refetch()}>
+          Повторить проверку
+        </button>
+      </div>
+    );
+  if (!workAllowed)
+    return (
+      <DlpRequired
+        user={user}
+        onLogout={() => {
+          void api("/auth/logout", "POST", {}).then(() => {
+            setUser(null);
+            client.clear();
+          });
+        }}
+      />
+    );
   const title = pages.find((p) => p[0] === page)?.[1] || "Главная панель";
   const loading =
     dashboard.isLoading ||
@@ -615,7 +694,7 @@ export default function App() {
             <Emblem kind="border" />
           </div>
           <div>
-            AegisBorder <strong>Supper</strong>
+            AegisBorder <strong>Supperapp</strong>
             <small className="brand-mission">{BRAND_TAGLINE}</small>
           </div>
         </NavLink>
@@ -633,8 +712,10 @@ export default function App() {
             const links = pages.filter(
               ([path, label]) =>
                 group.paths.includes(path) &&
+                (path !== "dlp" || user.permissions?.dlp) &&
                 (isAdmin ||
-                  !["users", "settings", "rule-builder"].includes(path)) &&
+                  !["users", "rule-builder"].includes(path) ||
+                  (path === "users" && user.permissions?.manage_users)) &&
                 (label + " " + (explainers[path]?.description || ""))
                   .toLocaleLowerCase("ru")
                   .includes(navSearch.toLocaleLowerCase("ru")),
@@ -704,7 +785,7 @@ export default function App() {
       <div className="workspace">
         <header>
           <div className="breadcrumbs">
-            AegisBorder Supper <ChevronRight size={14} /> <b>{title}</b>
+            AegisBorder Supperapp <ChevronRight size={14} /> <b>{title}</b>
           </div>
           <div className="row">
             <AppTools
@@ -740,7 +821,9 @@ export default function App() {
               <UserAvatar user={user} />
               <div>
                 {user.profile?.full_name || user.username}
-                <small>{roles[user.role]}</small>
+                <small>
+                  {user.role_label || roles[user.role] || user.role}
+                </small>
               </div>
             </button>
             <button
@@ -776,7 +859,7 @@ export default function App() {
           <div className="page-heading">
             <div>
               <span className="eyebrow">
-                AegisBorder Supper / ЦЕНТР КИБЕРЗАЩИТЫ
+                AegisBorder Supperapp / ЦЕНТР КИБЕРЗАЩИТЫ
               </span>
               <h1>{title}</h1>
               {page === "commission" && (
@@ -808,7 +891,9 @@ export default function App() {
           )}
           {loading && <div className="loading-line" />}
           <PresenceSignal userId={user.id} />
-          {page === "" && ["demo", "demo_viewer"].includes(user.role) && <DemoWelcome />}
+          {page === "" && ["demo", "demo_viewer"].includes(user.role) && (
+            <DemoWelcome />
+          )}
           {page === "" && dashboard.isPending && (
             <div
               className="ultra-skeleton-grid"
@@ -825,16 +910,32 @@ export default function App() {
             </div>
           )}
           {page !== "" &&
-            !["commission", "help", "academy", "team"].includes(page) && (
+            ![
+              "commission",
+              "help",
+              "academy",
+              "team",
+              "development",
+              "scenarios",
+              "workspace",
+              "tasks",
+              "security-analytics",
+              "settings",
+            ].includes(page) && (
               <PagePrimer page={page} technical={technical} />
             )}
-          {page === "development" && <DevelopmentModules />}
+          <PersonalExperience key={user.id} userId={user.id} page={page} />
+          <ServiceWorkflow page={page} />
+          {page === "development" && <ExperienceSlides mode="evolution" />}
+          {page === "commission" && <ExperienceSlides mode="demo" />}
+          {page === "scenarios" && <ExperienceSlides mode="training" />}
+          {page === "" && <DashboardWelcome />}
           {extendedPages.includes(page) && (
             <React.Suspense fallback={<p role="status">Загрузка модуля…</p>}>
               <SuperappModules
                 key={page}
                 page={page}
-                user={{ id: user.id, role: user.role }}
+                user={{ id: user.id, role: user.access_role || user.role }}
               />
             </React.Suspense>
           )}
@@ -844,7 +945,7 @@ export default function App() {
             >
               <Workspace
                 key={location.search}
-                user={user}
+                user={{ ...user, role: user.access_role || user.role }}
                 initialDocument={queryId(location.search, "document")}
                 initialIncident={queryId(location.search, "incident")}
               />
@@ -860,6 +961,7 @@ export default function App() {
               onIncident={setSelected}
             />
           )}
+          {page === "" && <CyberNews />}
           {["events", "incidents", "investigations"].includes(page) && (
             <>
               <div className="toolbar">
@@ -916,7 +1018,7 @@ export default function App() {
                         Назад
                       </Button>
                       <span>
-                        {offset + 1}–
+                        {eventQuery.data?.total ? offset + 1 : 0}–
                         {Math.min(offset + 100, eventQuery.data?.total || 0)}
                       </span>
                       <Button
@@ -1082,8 +1184,29 @@ export default function App() {
               )}
             </>
           )}
+          {page === "dlp" &&
+            (user.permissions?.dlp ? (
+              <DlpWorkspace />
+            ) : (
+              <Empty text="Aegis DLP: access restricted" />
+            ))}
+          {page === "" && user.permissions?.dlp && (
+            <div className="info-box">
+              <ShieldAlert size={24} />
+              <div>
+                <b>Aegis DLP · защита ПК</b>
+                <p>
+                  Подключите Windows-компьютер и следите за состоянием агента и
+                  защиты.
+                </p>
+              </div>
+              <Link className="btn btn-primary" to="/app/dlp">
+                Открыть DLP
+              </Link>
+            </div>
+          )}
           {page === "assets" && <Devices />}
-          {page === "participants" && <Participants admin={user.role === "admin"} />}
+          {page === "participants" && <Participants admin={isAdmin} />}
           {page === "scenarios" && (
             <TrainingLab
               scenarios={data.data || []}
@@ -1138,47 +1261,14 @@ export default function App() {
             </DemonstrationLanding>
           )}
           {page === "reports" && (
-            <Panel
-              title="Сохранённые отчёты"
-              subtitle="Снимок инцидента на момент формирования; PDF поддерживает русский текст"
-            >
-              {data.data?.length ? (
-                <div className="table-scroll">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Отчёт</th>
-                        <th>Инцидент</th>
-                        <th>Создан</th>
-                        <th />
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {data.data.map((r: Row) => (
-                        <tr key={r.id}>
-                          <td>Отчёт #{r.id}</td>
-                          <td>{r.snapshot.title}</td>
-                          <td>{date(r.created)}</td>
-                          <td>
-                            <Button asChild variant="outline">
-                              <a href={`/api/v1/reports/${r.id}/pdf`}>
-                                <Download size={16} /> Скачать PDF
-                              </a>
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <Empty text="Откройте инцидент и нажмите «Сформировать PDF»." />
-              )}
-            </Panel>
+            <ReportsCenter
+              canCreate={editable || user.role === "demo_viewer"}
+              onIncident={setSelected}
+            />
           )}
           {page === "users" &&
-            (isAdmin ? (
-              <UsersWorkspace
+            (user.permissions?.manage_users ? (
+              <AccessConsole
                 currentUser={user}
                 onChanged={() =>
                   api("/auth/me")
@@ -1255,7 +1345,10 @@ export default function App() {
                   />{" "}
                   Простой режим по умолчанию
                 </label>
-                <p>Контур: синтетический. Реальные устройства не подключены.</p>
+                <p>
+                  События обнаружения — учебные. Раздел «Устройства» показывает
+                  реальные подключения браузеров к сайту.
+                </p>
                 <Button disabled={!isAdmin || busy}>Сохранить настройки</Button>
               </form>
             </Panel>
@@ -1430,7 +1523,9 @@ function IncidentDetail({
     setConclusion(item.conclusion || "");
     setChecks(item.investigation?.checklist || []);
   }, [item.id, item.conclusion, item.investigation?.checklist]);
-  const canEdit = !["observer", "demo_viewer"].includes(user.role);
+  const canEdit = !["observer", "demo_viewer"].includes(
+    user.access_role || user.role,
+  );
   const operators = useQuery({
     queryKey: ["operators"],
     queryFn: () => api("/operators"),

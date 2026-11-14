@@ -1,1 +1,4 @@
+# Назначение файла: Обозначает Python-пакет для импорта соседних модулей.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 """Модульная версия AegisBorder Command Center."""

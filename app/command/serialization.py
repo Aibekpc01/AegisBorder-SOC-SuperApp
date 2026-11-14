@@ -1,3 +1,6 @@
+# Назначение файла: Преобразует объекты БД в данные ответа API, пригодные для JSON.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 from fastapi.encoders import jsonable_encoder
 
 

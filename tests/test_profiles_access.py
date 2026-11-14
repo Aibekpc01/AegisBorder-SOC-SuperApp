@@ -1,3 +1,6 @@
+# Назначение файла: Проверяет подсистему profiles_access. Содержит проверки ожидаемого поведения, а не код рабочего сервера.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 import base64
 import os
 from datetime import timedelta

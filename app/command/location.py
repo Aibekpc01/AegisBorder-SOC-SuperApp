@@ -1,3 +1,6 @@
+# Назначение файла: Сопоставляет доступные координаты и локальные справочники с географическими сведениями.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 """Local approximate settlement label; coordinates never leave the server."""
 
 from math import asin, cos, radians, sin, sqrt

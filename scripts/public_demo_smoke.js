@@ -1,3 +1,7 @@
+/* Назначение файла: Выполняет базовую браузерную проверку публичной демонстрации.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 const { chromium } = require("../frontend/node_modules/playwright");
 const assert = require("node:assert/strict");
 

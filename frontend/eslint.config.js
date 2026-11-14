@@ -1,3 +1,7 @@
+/* Назначение файла: Настройка инструментов разработки, сборки или проверки проекта.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 import js from "@eslint/js";
 import ts from "typescript-eslint";
 import hooks from "eslint-plugin-react-hooks";
@@ -18,4 +22,13 @@ export default ts.config(
     },
   },
   { files: ["*.js"], languageOptions: { globals: globals.node } },
+  {
+    // Playwright scripts run in Node and evaluate callbacks in the browser.
+    files: ["scripts/emblems-r15-check.mjs", "scripts/site-audit-*.mjs"],
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
+  },
+  {
+    files: ["scripts/site-audit-accessibility.mjs", "scripts/site-audit-extra.mjs"],
+    languageOptions: { globals: { axe: "readonly" } },
+  },
 );

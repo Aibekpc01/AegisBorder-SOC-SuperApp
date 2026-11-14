@@ -1,17 +1,53 @@
+# Назначение файла: Предоставляет HTTP-маршруты для чтения и изменения пользовательских профилей.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 from datetime import timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from pydantic import BaseModel, Field
 from sqlalchemy import select
 
 from .access import connection, evaluate, inspect, policy
+from .avatars import generated_avatar
 from .db import get_db
 from .models import LoginRecord, Setting, UserProfile, utcnow
 from .profiles import permitted_user, sanitize_avatar, user_record
+from .rbac import require_target, role_info
 from .schemas import AccessPolicyInput, AddressInput, AvatarInput, LocationInput, ProfileInput
 from .security import admin, audit, current
 from .serialization import record
 
 router = APIRouter(prefix="/api/v1")
+
+
+def protect_profile(db, target, actor):
+    if target.id != actor.id:
+        require_target(actor, target, db)
+
+
+class GeneratedAvatar(BaseModel):
+    model_config = {"extra": "forbid"}
+    variant: int = Field(ge=0, le=999999)
+
+
+@router.get("/users/{user_id}/avatar/presets/{variant}")
+def avatar_preset(user_id: int, variant: int, user=Depends(current), db=Depends(get_db)):
+    permitted_user(db, user_id, user)
+    if not 0 <= variant <= 999999:
+        raise HTTPException(422, "Недопустимый вариант")
+    return Response(generated_avatar(user_id, variant), media_type="image/png")
+
+
+@router.post("/users/{user_id}/avatar/generate")
+def avatar_generate(user_id: int, data: GeneratedAvatar, user=Depends(current), db=Depends(get_db)):
+    target = permitted_user(db, user_id, user)
+    protect_profile(db, target, user)
+    profile = profile_row(db, target.id)
+    profile.avatar_data = generated_avatar(user_id, data.variant)
+    profile.updated = utcnow()
+    audit(db, user.id, f"Выбран автоматически созданный аватар пользователя #{user_id}")
+    db.commit()
+    return user_record(db, target, record)
 
 
 def profile_row(db, user_id):
@@ -25,12 +61,15 @@ def profile_row(db, user_id):
 @router.get("/users/{user_id}/profile")
 def get_profile(user_id: int, user=Depends(current), db=Depends(get_db)):
     row = permitted_user(db, user_id, user)
-    return user_record(db, row, record)
+    value = user_record(db, row, record)
+    value["can_edit_profile"] = row.id == user.id or role_info(row.role, db)["rank"] <= role_info(user.role, db)["rank"]
+    return value
 
 
 @router.put("/users/{user_id}/profile")
 def save_profile(user_id: int, data: ProfileInput, user=Depends(current), db=Depends(get_db)):
     target = permitted_user(db, user_id, user)
+    protect_profile(db, target, user)
     profile = profile_row(db, target.id)
     for key, value in data.model_dump().items():
         setattr(profile, key, value)
@@ -43,6 +82,7 @@ def save_profile(user_id: int, data: ProfileInput, user=Depends(current), db=Dep
 @router.put("/users/{user_id}/avatar")
 def avatar_upload(user_id: int, data: AvatarInput, user=Depends(current), db=Depends(get_db)):
     target = permitted_user(db, user_id, user)
+    protect_profile(db, target, user)
     image = sanitize_avatar(data.image_data_url)
     profile = profile_row(db, target.id)
     profile.avatar_data = image
@@ -64,6 +104,7 @@ def avatar_get(user_id: int, user=Depends(current), db=Depends(get_db)):
 @router.delete("/users/{user_id}/avatar")
 def avatar_delete(user_id: int, user=Depends(current), db=Depends(get_db)):
     target = permitted_user(db, user_id, user)
+    protect_profile(db, target, user)
     profile = db.get(UserProfile, user_id)
     if profile:
         profile.avatar_data = None

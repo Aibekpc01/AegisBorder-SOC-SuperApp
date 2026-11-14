@@ -1,3 +1,7 @@
+/* Назначение файла: Проверяет подсистему learning examples. Содержит проверки ожидаемого поведения, а не код рабочего сервера.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 import { expect, it } from "vitest";
 import { explainers } from "./explainers";
 import { learningExamples } from "./learning-examples";

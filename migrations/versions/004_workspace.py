@@ -1,3 +1,6 @@
+# Назначение файла: Изменение схемы БД: 004_workspace. Применяется Alembic в порядке связей revision/down_revision.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 """Документы Workspace; существующие данные не изменяются."""
 
 import sqlalchemy as sa

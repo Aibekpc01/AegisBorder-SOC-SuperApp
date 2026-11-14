@@ -1,3 +1,7 @@
+/* Назначение файла: Запускает учебные сценарии и показывает ход практического задания.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {

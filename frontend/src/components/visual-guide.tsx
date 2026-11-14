@@ -1,3 +1,7 @@
+/* Назначение файла: Показывает визуальную инструкцию по разделам приложения.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 import { useState } from "react";
 import {
   Monitor,

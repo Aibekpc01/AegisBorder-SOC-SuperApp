@@ -1,3 +1,6 @@
+# Назначение файла: Подключает Alembic к конфигурации SQLAlchemy и запускает миграции схемы базы данных.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 from alembic import context
 
 from app.command import (

@@ -1,3 +1,6 @@
+# Назначение файла: Изменение схемы БД: 001_command_center. Применяется Alembic в порядке связей revision/down_revision.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 """Начальная неизменяемая схема Command Center; таблицы v0.2 сохраняются."""
 
 import sqlalchemy as sa

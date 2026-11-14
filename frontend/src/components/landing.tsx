@@ -1,3 +1,7 @@
+/* Назначение файла: Показывает публичную главную страницу и переходы к рабочему приложению.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -23,6 +27,7 @@ import { ThemeToggle } from "./theme-toggle";
 import { EmblemPair } from "./emblems";
 import { ModuleMenu, ModuleCatalog } from "./module-menu";
 import { BRAND_NAME, BRAND_TAGLINE } from "../lib/brand";
+import { useScrollReveal } from "../lib/use-scroll-reveal";
 import { OverviewShowcase } from "./project-experience";
 
 const examples = [
@@ -96,6 +101,7 @@ const capabilities = [
   },
 ];
 export function Landing() {
+  const landingRef = useScrollReveal<HTMLDivElement>();
   const [example, setExample] = useState(0),
     [step, setStep] = useState(0);
   const current = examples[example];
@@ -118,7 +124,7 @@ export function Landing() {
     ],
   ];
   return (
-    <div className="super-landing">
+    <div className="super-landing" ref={landingRef}>
       <a className="skip-link" href="#landing-main">
         Перейти к содержимому
       </a>
@@ -162,7 +168,7 @@ export function Landing() {
             <h1>
               AegisBorder
               <br />
-              <em>Supper</em>
+              <em>Supperapp</em>
             </h1>
             <p className="hero-mission">{BRAND_TAGLINE}</p>
             <p className="hero-description">
@@ -175,7 +181,7 @@ export function Landing() {
             </a>
             <div className="hero-actions">
               <Link className="btn btn-primary" to="/app">
-                Открыть Supper <ArrowRight size={17} />
+                Открыть Supperapp <ArrowRight size={17} />
               </Link>
               <Link className="btn btn-outline" to="/app/commission">
                 <Play size={16} /> Запустить демонстрацию
@@ -267,7 +273,7 @@ export function Landing() {
                 данные пользователей.
               </p>
             </aside>
-            <div className="preview-detail">
+            <div className="preview-detail" key={current.route}>
               <div className="row between">
                 <span className="preview-overline">
                   ДЕМОНСТРАЦИОННЫЙ ИНЦИДЕНТ
@@ -465,7 +471,7 @@ export function Landing() {
       <footer className="landing-footer">
         <span>
           <EmblemPair className="footer-emblems" publicMode /> AegisBorder
-          Supper
+          Supperapp
         </span>
         <p>
           Демонстрационный проект. Синтетические данные. Не является официальным

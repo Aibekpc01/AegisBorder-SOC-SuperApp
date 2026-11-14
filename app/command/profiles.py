@@ -1,3 +1,6 @@
+# Назначение файла: Содержит правила работы с профилями, их полями и доступом к персональным сведениям.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 import base64
 import binascii
 import warnings
@@ -8,10 +11,11 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 from sqlalchemy import select
 
 from .models import LoginRecord, User, UserProfile
+from .rbac import manages_users, permissions, role_info
 
 
 def permitted_user(db, user_id, actor):
-    if actor.role != "admin" and actor.id != user_id:
+    if not manages_users(actor) and actor.id != user_id:
         raise HTTPException(404, "Профиль не найден")
     row = db.get(User, user_id)
     if not row:
@@ -61,6 +65,8 @@ def sanitize_avatar(value):
 
 def user_record(db, row, serialize):
     result = serialize(row)
+    info = role_info(row.role, db)
+    result.update(access_role=info["base"], role_label=info["label"], role_rank=info["rank"], permissions=permissions(row, db))
     profile = db.get(UserProfile, row.id)
     result["profile"] = (
         serialize(profile)

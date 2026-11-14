@@ -1,3 +1,6 @@
+# Назначение файла: Запускает отдельное локальное окружение для просмотра интерфейса.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 """Run the isolated ULTRA preview; never connect to the deployment database."""
 import os
 import secrets

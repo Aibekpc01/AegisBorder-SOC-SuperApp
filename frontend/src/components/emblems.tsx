@@ -1,6 +1,9 @@
+/* Назначение файла: Отображает эмблемы с учётом настройки их публичного показа.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 import borderService from "../assets/border-service.png";
 import knb from "../assets/knb.svg";
-import { Shield } from "lucide-react";
 export const publicEmblemsEnabled =
   import.meta.env.VITE_PUBLIC_OFFICIAL_EMBLEMS !== "false";
 
@@ -39,18 +42,11 @@ export function EmblemPair({
   className?: string;
   publicMode?: boolean;
 }) {
-  if (publicMode && !publicEmblemsEnabled)
-    return (
-      <Shield
-        className="public-brand-mark"
-        size={38}
-        aria-label="Знак AegisBorder"
-      />
-    );
+  const showOfficial = !publicMode || publicEmblemsEnabled;
   return (
     <div className={"emblem-pair " + className}>
-      <Emblem kind="border" />
-      <Emblem kind="knb" />
+      {showOfficial && <Emblem kind="border" />}
+      {showOfficial && <Emblem kind="knb" />}
     </div>
   );
 }

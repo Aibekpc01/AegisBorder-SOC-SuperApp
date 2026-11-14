@@ -1,14 +1,34 @@
+# Назначение файла: Сохранённый ранний прототип. Текущий запуск через app.main использует Command Center.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 """AegisBorder SOC: локальный учебный прототип. Не подключается к реальной инфраструктуре."""
-import os, hashlib, hmac, secrets, json
-from datetime import datetime, timezone, timedelta
-from pathlib import Path
+import hashlib
+import hmac
+import json
+import os
+import secrets
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Depends, HTTPException, Header
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+
+from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Text, select, func, delete, text
-from sqlalchemy.orm import DeclarativeBase, sessionmaker, Session
+from pydantic import BaseModel
+from sqlalchemy import (
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    create_engine,
+    delete,
+    func,
+    select,
+    text,
+)
+from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 DB_URL = os.getenv('DATABASE_URL', 'sqlite:///./aegisborder_dev.db')
 engine = create_engine(DB_URL, connect_args={'check_same_thread': False} if DB_URL.startswith('sqlite') else {}, pool_pre_ping=True)

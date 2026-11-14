@@ -1,6 +1,11 @@
+/* Назначение файла: Выполняет вступительную проверку и показывает состояние подготовки приложения.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 import { useEffect, useState, type ReactNode } from "react";
-import { CheckCircle2, LoaderCircle, ShieldCheck } from "lucide-react";
+import { CheckCircle2, LoaderCircle, CircleAlert } from "lucide-react";
 import "../entry-check.css";
+import aegisMark from "../assets/aegis-mark.svg";
 
 export function EntryCheck({ children }: { children: ReactNode }) {
   const [done, setDone] = useState(false),
@@ -13,6 +18,7 @@ export function EntryCheck({ children }: { children: ReactNode }) {
     const controller = new AbortController();
     setError("");
     setServer(false);
+    setResources(false);
     const timeout = setTimeout(() => controller.abort(), 8000);
     const ready = Promise.race([
       document.fonts.ready,
@@ -53,12 +59,12 @@ export function EntryCheck({ children }: { children: ReactNode }) {
   if (done) return <>{children}</>;
   return (
     <div className="entry-check">
-      <div className="entry-check-card">
+      <div className="entry-check-card" data-state={error ? "error" : "loading"}>
         <div className="entry-shield">
-          <ShieldCheck size={56} />
+          <img src={aegisMark} alt="Aegis" width={64} height={64} />
           <span />
         </div>
-        <span className="experience-kicker">AegisBorder Supper</span>
+        <span className="experience-kicker">AegisBorder Supperapp</span>
         <h1>
           Проверяем готовность
           <br />к работе
@@ -80,6 +86,8 @@ export function EntryCheck({ children }: { children: ReactNode }) {
           <li>
             {server ? (
               <CheckCircle2 />
+            ) : error ? (
+              <CircleAlert className="entry-error-icon" />
             ) : (
               <LoaderCircle className="entry-spin" />
             )}
@@ -87,8 +95,8 @@ export function EntryCheck({ children }: { children: ReactNode }) {
             <b>{server ? "Доступны" : error ? "Нет ответа" : "Проверка…"}</b>
           </li>
         </ul>
-        <div className="entry-check-progress" aria-hidden="true">
-          <span />
+        <div className="entry-check-progress" role="progressbar" aria-label="Подготовка приложения" aria-valuemin={0} aria-valuemax={2} aria-valuenow={Number(resources) + Number(server)}>
+          <span style={{ width: `${(Number(resources) + Number(server)) * 50}%` }} />
         </div>
         <small>
           Права доступа проверяются при входе. Этот экран проверяет готовность

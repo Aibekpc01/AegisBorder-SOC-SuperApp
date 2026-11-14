@@ -1,3 +1,7 @@
+/* Назначение файла: Подготавливает события для учебных заданий.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 export type TrainingEvent = {
   external_id: string;
   time: string;

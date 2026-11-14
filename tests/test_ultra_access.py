@@ -1,3 +1,6 @@
+# Назначение файла: Проверяет подсистему ultra_access. Содержит проверки ожидаемого поведения, а не код рабочего сервера.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 """Server permissions and reversible administration for AEGIS ULTRA."""
 
 

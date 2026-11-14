@@ -1,3 +1,6 @@
+# Назначение файла: Описывает таблицы основного контура: пользователи, сеансы, события, правила, инциденты и аудит. Изменения схемы оформляются миграциями.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 from datetime import datetime, timezone
 
 from sqlalchemy import JSON, DateTime, ForeignKey, LargeBinary, String, Text, UniqueConstraint

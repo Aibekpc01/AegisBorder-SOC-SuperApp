@@ -1,3 +1,6 @@
+# Назначение файла: Изменение схемы БД: 007_connectors. Применяется Alembic в порядке связей revision/down_revision.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 """Authenticated corporate event receivers."""
 
 import sqlalchemy as sa

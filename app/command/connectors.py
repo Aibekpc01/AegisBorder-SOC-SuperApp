@@ -1,3 +1,6 @@
+# Назначение файла: Подключает внешние источники событий и обрабатывает настройки интеграций. Реальная работа зависит от заданных подключений.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 """Push integration: no vendor credentials, outbound calls or automatic remediation."""
 
 import hashlib
@@ -14,6 +17,7 @@ from .access import inspect
 from .db import get_db
 from .detection import ingest
 from .models import User, utcnow
+from .rbac import role_base
 from .schemas import EventInput
 from .security import admin, audit, current
 from .superapp_models import Connector
@@ -146,7 +150,7 @@ def authenticate(db, connector_id, request):
     if not hmac.compare_digest(row.token_hash, hashlib.sha256(key.encode()).hexdigest()):
         raise HTTPException(401, "Неверный ключ приёмника")
     owner = db.get(User, row.owner_id)
-    if not row.enabled or not owner or not owner.active or owner.role != "admin":
+    if not row.enabled or not owner or not owner.active or role_base(owner, db) != "admin":
         raise HTTPException(403, "Приёмник отключён или администратор утратил доступ")
     if not inspect(db, request)["network"]["allowed"]:
         raise HTTPException(403, "Сетевая политика запрещает приём")

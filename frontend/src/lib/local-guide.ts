@@ -1,3 +1,7 @@
+/* Назначение файла: Содержит локальные ответы и справочные сведения для помощника.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 import { explainers, glossary } from "./explainers";
 
 export function localGuideAnswer(question: string, page: string): string {
@@ -6,7 +10,7 @@ export function localGuideAnswer(question: string, page: string): string {
     explainers[page] ||
     (page === "landing"
       ? {
-          description: "Это знакомство с AegisBorder Supper — цифровым суперприложением для расследования киберинцидентов и защиты информации в Пограничной службе КНБ РК.",
+          description: "Это знакомство с AegisBorder Supperapp — цифровым суперприложением для расследования киберинцидентов и защиты информации в Пограничной службе КНБ РК.",
           outcome:
             "Вы узнаете назначение проекта и сможете перейти к рабочей панели.",
           steps: [

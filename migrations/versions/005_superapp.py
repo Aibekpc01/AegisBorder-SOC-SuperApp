@@ -1,3 +1,6 @@
+# Назначение файла: Изменение схемы БД: 005_superapp. Применяется Alembic в порядке связей revision/down_revision.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 """Local tasks and module histories, without replacing existing data."""
 
 import sqlalchemy as sa

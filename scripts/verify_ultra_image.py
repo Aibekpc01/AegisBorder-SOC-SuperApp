@@ -1,3 +1,6 @@
+# Назначение файла: Проверяет собранный образ приложения.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 """Smoke-test a disposable ULTRA container, never the production URL."""
 import http.cookiejar
 import json

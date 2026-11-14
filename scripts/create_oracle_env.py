@@ -1,3 +1,6 @@
+# Назначение файла: Готовит конфигурацию окружения для размещения на Oracle.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 """Generate server-local secrets, without printing or replacing them."""
 
 import argparse

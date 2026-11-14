@@ -1,3 +1,7 @@
+/* Назначение файла: Показывает учебную историю атаки с хакером, оператором и переключением модулей. Сама история не выполняет действия на устройствах.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 import { platformNavigation } from "./modules";
 
 export const defensePhases = [
@@ -24,7 +28,15 @@ export const defensePhases = [
     action:
       "Оператор изучает связи, проверяет факты и составляет план реагирования.",
     result: "Команда понимает масштаб и назначает ответственных.",
-    paths: ["assets", "twin", "investigations", "assistant", "tasks", "team"],
+    paths: [
+      "assets",
+      "twin",
+      "investigations",
+      "assistant",
+      "tasks",
+      "team",
+      "participants",
+    ],
   },
   {
     title: "Реагирование и выводы",
@@ -40,6 +52,7 @@ export const defensePhases = [
       "academy",
       "scenarios",
       "commission",
+      "development",
     ],
   },
 ] as const;
@@ -150,17 +163,29 @@ const uses: Record<string, [string, string, string]> = {
     "Обсудите проверку в чате и перенесите поручение в задачи.",
     "Общий контекст и сохраняемое обсуждение.",
   ],
+  participants: [
+    "Найти действующих сотрудников и ответственных.",
+    "Посмотрите присутствие коллег, подразделение и время последней связи.",
+    "Понятно, кто сейчас может принять участие в проверке.",
+  ],
+  development: [
+    "Проследить развитие приложения и следующие шаги.",
+    "Листайте этапы, сравните работающие функции и будущие интеграции.",
+    "Планы подключения CRM и Qainar.knb отделены от доступных инструментов.",
+  ],
 };
 
-export const defenseModules = platformNavigation.map((module) => {
-  const [purpose, action, result] = uses[module.path];
-  return {
-    ...module,
-    purpose,
-    action,
-    result,
-    phase: defensePhases.findIndex((p) =>
-      (p.paths as readonly string[]).includes(module.path),
-    ),
-  };
-}).sort((a,b) => a.phase-b.phase || a.id-b.id);
+export const defenseModules = platformNavigation
+  .map((module) => {
+    const [purpose, action, result] = uses[module.path];
+    return {
+      ...module,
+      purpose,
+      action,
+      result,
+      phase: defensePhases.findIndex((p) =>
+        (p.paths as readonly string[]).includes(module.path),
+      ),
+    };
+  })
+  .sort((a, b) => a.phase - b.phase || a.id - b.id);

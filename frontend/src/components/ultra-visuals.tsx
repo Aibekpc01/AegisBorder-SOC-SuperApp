@@ -1,3 +1,7 @@
+/* Назначение файла: Содержит визуальные элементы панели: индикаторы, диаграммы и пояснения состояния.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 import { useEffect, useId, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Cpu, Maximize2, Minus, Plus, RotateCcw, X } from "lucide-react";
@@ -205,7 +209,7 @@ export function InfrastructureScene({
       <svg
         className="ultra-network"
         viewBox="0 0 620 430"
-        role="img"
+        role="group"
         aria-label="Схема устройств и учётных записей. Связи построены по сохранённым событиям."
       >
         <defs>

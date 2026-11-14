@@ -1,3 +1,7 @@
+/* Назначение файла: Строит меню модулей и переходы между рабочими разделами.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowUpRight, Grid2X2, Search } from "lucide-react";
@@ -14,6 +18,8 @@ export function ModuleMenu({ compact = false }: { compact?: boolean }) {
       <button
         className={compact ? "icon-btn" : "mega-trigger"}
         aria-label="Открыть меню модулей"
+        aria-haspopup="dialog"
+        aria-expanded={open}
         title="Разделы приложения — выберите, что хотите сделать"
         onClick={() => setOpen(true)}
       >
@@ -23,7 +29,7 @@ export function ModuleMenu({ compact = false }: { compact?: boolean }) {
         </span>
       </button>
       <Dialog
-        title="Модули AegisBorder Supper"
+        title="Модули AegisBorder Supperapp"
         open={open}
         onClose={() => setOpen(false)}
       >
@@ -89,7 +95,14 @@ export function ModuleMenu({ compact = false }: { compact?: boolean }) {
             (m.name + m.description)
               .toLocaleLowerCase("ru")
               .includes(query.toLocaleLowerCase("ru")),
-          ) && <p>Модули не найдены.</p>}
+          ) && (
+            <div className="module-empty" role="status">
+              <Search size={28} aria-hidden="true" />
+              <b>Ничего не найдено</b>
+              <p>Попробуйте другое название или сбросьте поиск.</p>
+              <button className="btn btn-outline" onClick={() => setQuery("")}>Показать все модули</button>
+            </div>
+          )}
         </div>
       </Dialog>
     </>

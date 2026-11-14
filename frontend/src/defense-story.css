@@ -1,3 +1,7 @@
+/* Назначение файла: Стили defense-story: задают внешний вид соответствующих классов и адаптацию экрана. Применяются через импорты интерфейса.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 .defense-story {
   --story-border: color-mix(in srgb, var(--text) 15%, transparent);
   margin: 28px 0;

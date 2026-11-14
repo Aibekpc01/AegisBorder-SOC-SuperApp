@@ -1,3 +1,7 @@
+/* Назначение файла: Показывает подсказки для первого знакомства с интерфейсом.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import {

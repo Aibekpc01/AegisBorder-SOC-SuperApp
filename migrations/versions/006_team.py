@@ -1,3 +1,6 @@
+# Назначение файла: Изменение схемы БД: 006_team. Применяется Alembic в порядке связей revision/down_revision.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 """Persistent team discussion; personal demo messages stay isolated."""
 
 import sqlalchemy as sa

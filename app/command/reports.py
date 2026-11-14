@@ -1,3 +1,6 @@
+# Назначение файла: Формирует PDF-отчёты с данными расследования; отвечает за оформление и шрифты документа.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 from html import escape
 from io import BytesIO
 from pathlib import Path
@@ -28,9 +31,9 @@ def pdf(snapshot):
     for style in styles.byName.values():
         style.fontName = "Aegis"
     stream = BytesIO()
-    document = SimpleDocTemplate(stream, title="AegisBorder Supper — отчёт", author="AegisBorder Supper")
+    document = SimpleDocTemplate(stream, title="AegisBorder Supperapp — отчёт", author="AegisBorder Supperapp")
     sections = [
-        "AegisBorder Supper — учебный отчёт",
+        "AegisBorder Supperapp — учебный отчёт",
         f"Инцидент №{snapshot['id']}: {snapshot['title']}",
         f"Риск: {snapshot['risk']}/100. Статус: {snapshot['status']}",
         snapshot["explanation"],

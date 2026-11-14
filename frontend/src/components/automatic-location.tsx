@@ -1,3 +1,7 @@
+/* Назначение файла: Запрашивает разрешённые браузером сведения о местоположении и передаёт их в механизм присутствия.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { MapPin } from "lucide-react";

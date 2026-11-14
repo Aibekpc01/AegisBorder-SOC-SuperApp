@@ -1,3 +1,6 @@
+# Назначение файла: Описывает дополнительные таблицы суперприложения: документы, задачи, сообщения и связанные записи.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 """Persistent local SuperApp workflows; personal records remain owner scoped."""
 
 from datetime import datetime

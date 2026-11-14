@@ -1,3 +1,6 @@
+# Назначение файла: Добавляет маршруты модулей суперприложения: совместную работу, учебные разделы и связанные записи.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 """Local SuperApp modules. No external connections or automatic response actions."""
 
 import csv
@@ -12,12 +15,24 @@ from urllib.parse import urlsplit
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field, ValidationError, field_validator
-from sqlalchemy import select, update
+from sqlalchemy import or_, select, update
 
 from .curriculum import CORE_CHAPTERS, EXTRA_COURSES
 from .db import get_db
 from .detection import ingest
-from .models import Asset, Event, Incident, IncidentEvent, Rule, Setting, User, UserProfile, utcnow
+from .models import (
+    Asset,
+    Audit,
+    Event,
+    Incident,
+    IncidentEvent,
+    Rule,
+    Setting,
+    User,
+    UserProfile,
+    utcnow,
+)
+from .rbac import is_admin, role_base
 from .schemas import EventInput
 from .security import admin, audit, current, operator, visible
 from .serialization import record
@@ -122,6 +137,7 @@ class TaskInput(StrictInput):
     title: str = Field(min_length=1, max_length=200)
     description: str = Field(default="", max_length=5000)
     assignee_id: int | None = Field(default=None, gt=0)
+    reviewer_id: int | None = Field(default=None, gt=0)
     incident_id: int | None = Field(default=None, gt=0)
     due: datetime | None = None
 
@@ -145,15 +161,34 @@ def tasks_visible(user):
     return query.where((WorkTask.private.is_(False)) | (WorkTask.owner_id == user.id))
 
 
+def task_record(db, task):
+    reviewer = db.get(Setting, f"task-reviewer:{task.id}")
+    return {**record(task), "reviewer_id": reviewer.value["user_id"] if reviewer else None}
+
+
+@router.get("/tasks/{task_id}/history")
+def task_history(task_id: int, user=Depends(current), db=Depends(get_db)):
+    task = db.scalar(tasks_visible(user).where(WorkTask.id == task_id))
+    if not task:
+        raise HTTPException(404, "Задача не найдена")
+    query = select(Audit).where(or_(
+        Audit.action == f"Создана задача SuperApp #{task_id}",
+        Audit.action.startswith(f"Задача #{task_id}: "),
+        Audit.action.startswith(f"Управление задачей #{task_id}: "),
+    )).order_by(Audit.id.desc()).limit(100)
+    return [{"id": row.id, "actor_id": row.actor_id, "action": row.action, "time": row.time}
+            for row in db.scalars(query)]
+
+
 @router.get("/tasks")
 def tasks(state: Literal["active", "archived", "deleted"] = "active", user=Depends(current), db=Depends(get_db)):
-    if state != "active" and user.role != "admin":
+    if state != "active" and not is_admin(user):
         raise HTTPException(403, "Архив и корзина доступны администратору")
     result = []
     for task in db.scalars(tasks_visible(user).order_by(WorkTask.id.desc())):
         lifecycle = db.get(Setting, f"task-lifecycle:{task.id}")
         if (lifecycle.value.get("state", "active") if lifecycle else "active") == state:
-            result.append({**record(task), "lifecycle": state})
+            result.append({**task_record(db, task), "lifecycle": state})
         if len(result) == 200:
             break
     return result
@@ -224,18 +259,26 @@ def create_task(data: TaskInput, user=Depends(operator), db=Depends(get_db)):
         private = private or inc.demo_id is not None
     if data.assignee_id:
         assignee = db.get(User, data.assignee_id)
-        if not assignee or not assignee.active or assignee.role not in ("admin", "analyst", "demo"):
+        if not assignee or not assignee.active or role_base(assignee, db) not in ("admin", "analyst", "demo"):
             raise HTTPException(422, "Недопустимый ответственный")
         if private and assignee.id != user.id:
             raise HTTPException(403, "Личная учебная задача назначается только владельцу")
         if not private and assignee.role == "demo":
             raise HTTPException(422, "Общая задача не назначается demo-пользователю")
-    task = WorkTask(**data.model_dump(), owner_id=user.id, private=private)
+    if data.reviewer_id:
+        reviewer = db.get(User, data.reviewer_id)
+        if private or not reviewer or not reviewer.active or role_base(reviewer, db) not in ("admin", "analyst"):
+            raise HTTPException(422, "Согласующим может быть действующий аналитик или администратор общей задачи")
+    task = WorkTask(**data.model_dump(exclude={"reviewer_id"}), owner_id=user.id, private=private)
     db.add(task)
     db.flush()
+    if data.reviewer_id:
+        db.add(Setting(key=f"task-reviewer:{task.id}", value={"user_id": data.reviewer_id}))
     audit(db, user.id, f"Создана задача SuperApp #{task.id}")
+    if data.reviewer_id:
+        audit(db, user.id, f"Задача #{task.id}: назначен согласующий #{data.reviewer_id}")
     db.commit()
-    return record(task)
+    return task_record(db, task)
 
 
 @router.patch("/tasks/{task_id}")
@@ -246,8 +289,13 @@ def change_task(task_id: int, data: TaskUpdate, user=Depends(operator), db=Depen
     lifecycle = db.get(Setting, f"task-lifecycle:{task.id}")
     if lifecycle and lifecycle.value.get("state") != "active":
         raise HTTPException(409, "Сначала восстановите задачу")
-    if user.id not in (task.owner_id, task.assignee_id) and user.role != "admin":
+    reviewer = db.get(Setting, f"task-reviewer:{task.id}")
+    reviewer_id = reviewer.value["user_id"] if reviewer else task.owner_id
+    if user.id not in (task.owner_id, task.assignee_id, reviewer_id) and not is_admin(user):
         raise HTTPException(403, "Изменять задачу может владелец или ответственный")
+    if user.id == reviewer_id and user.id not in (task.owner_id, task.assignee_id) and not is_admin(user):
+        if task.status != "На проверке" or data.status not in ("Завершена", "В работе"):
+            raise HTTPException(403, "Согласующий принимает или возвращает результат с проверки")
     transitions = {
         "Новая": {"В работе"},
         "В работе": {"Новая", "На проверке"},
@@ -258,8 +306,8 @@ def change_task(task_id: int, data: TaskUpdate, user=Depends(operator), db=Depen
         raise HTTPException(409, "Задача изменилась. Обновите список.")
     if data.status not in transitions[task.status]:
         raise HTTPException(409, "Недопустимый переход статуса")
-    if data.status == "Завершена" and user.id != task.owner_id and user.role != "admin":
-        raise HTTPException(403, "Завершение подтверждает постановщик задачи")
+    if data.status == "Завершена" and user.id != reviewer_id and not is_admin(user):
+        raise HTTPException(403, "Завершение подтверждает назначенный согласующий или постановщик")
     changed = db.execute(
         update(WorkTask)
         .where(
@@ -273,7 +321,7 @@ def change_task(task_id: int, data: TaskUpdate, user=Depends(operator), db=Depen
     audit(db, user.id, f"Задача #{task.id}: {data.status}")
     db.commit()
     db.refresh(task)
-    return record(task)
+    return task_record(db, task)
 
 
 def save_record(db, user, kind, payload):

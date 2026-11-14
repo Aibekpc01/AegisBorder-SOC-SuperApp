@@ -24,6 +24,7 @@ services:
       AUDIT_KEY: ${AUDIT_KEY:?Create .env.oracle first}
       PUBLIC_ORIGIN: https://${AEGIS_DOMAIN:?Set AEGIS_DOMAIN}
       PUBLIC_DEMO_MODE: "true"
+      DLP_ENFORCE: "true"
       TRUSTED_PROXY_CIDRS: 10.88.7.10/32
     networks: [oracle_backend]
     depends_on:

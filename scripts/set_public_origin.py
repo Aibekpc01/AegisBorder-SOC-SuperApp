@@ -1,3 +1,6 @@
+# Назначение файла: Настраивает публичный адрес приложения.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 """Read Quick Tunnel's public URL and update only PUBLIC_ORIGIN."""
 
 import re

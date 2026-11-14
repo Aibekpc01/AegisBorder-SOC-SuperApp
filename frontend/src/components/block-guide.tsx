@@ -1,3 +1,7 @@
+/* Назначение файла: Объясняет назначение отдельного блока интерфейса.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 import { Info, ArrowUpRight, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";

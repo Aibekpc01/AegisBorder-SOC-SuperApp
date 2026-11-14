@@ -1,3 +1,7 @@
+/* Назначение файла: Стили site-assistant: задают внешний вид соответствующих классов и адаптацию экрана. Применяются через импорты интерфейса.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 .site-assistant-launcher {
   position: fixed;
   right: 20px;

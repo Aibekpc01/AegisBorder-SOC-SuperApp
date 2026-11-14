@@ -1,0 +1,253 @@
+/* Назначение файла: Стили dlp: задают внешний вид соответствующих классов и адаптацию экрана. Применяются через импорты интерфейса.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
+.dlp-workspace {
+  display: grid;
+  gap: 22px;
+  animation: dlp-enter 0.45s ease-out;
+}
+.dlp-hero {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  padding: 32px;
+  border: 1px solid #38bda955;
+  border-radius: 22px;
+  background:
+    radial-gradient(ellipse at top right, #18a39728, transparent 65%),
+    var(--panel, #101c30);
+}
+.dlp-hero > svg {
+  color: #48d9bd;
+  flex-shrink: 0;
+}
+.dlp-hero h1 {
+  font-size: clamp(24px, 2.5vw, 36px);
+  max-width: 780px;
+  line-height: 1.2;
+  margin: 14px 0;
+}
+.dlp-hero p {
+  max-width: 850px;
+  opacity: 0.8;
+}
+.dlp-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+.dlp-metrics article,
+.dlp-card {
+  border: 1px solid #7896b52b;
+  border-radius: 16px;
+  padding: 24px;
+  background: var(--panel, #111d30);
+}
+.dlp-metrics strong {
+  display: block;
+  font-size: 32px;
+  color: #58ddc3;
+}
+.dlp-metrics span {
+  font-size: 13px;
+  opacity: 0.8;
+}
+.dlp-card h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 19px;
+}
+.dlp-card p {
+  line-height: 1.6;
+}
+.dlp-enroll {
+  display: flex;
+  gap: 16px;
+  align-items: end;
+  flex-wrap: wrap;
+  margin: 22px 0;
+}
+.dlp-enroll label {
+  display: grid;
+  gap: 8px;
+  flex: 1;
+  min-width: 180px;
+}
+.dlp-enroll select,
+.dlp-enroll input {
+  width: 100%;
+  padding: 11px;
+  border-radius: 9px;
+  border: 1px solid #7896b555;
+  background: #101c30;
+  color: #e5edf8;
+}
+.dlp-columns {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(0, 2fr);
+  gap: 22px;
+}
+.dlp-device {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  padding: 17px;
+  margin: 10px 0;
+  background: transparent;
+  color: inherit;
+  border: 1px solid #7896b544;
+  border-radius: 12px;
+  cursor: pointer;
+}
+.dlp-device.selected {
+  border-color: #41d5b6;
+  background: #41d5b60b;
+}
+.dlp-device small {
+  grid-column: 1/-1;
+  overflow-wrap: anywhere;
+  opacity: 0.7;
+}
+.dlp-state {
+  font-size: 11px;
+  color: #b5c1d4;
+}
+.dlp-state.online {
+  color: #4ddeab;
+}
+.dlp-state.revoked {
+  color: #ff9c9c;
+}
+.dlp-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  font-size: 14px;
+}
+.dlp-details dd {
+  margin: 0;
+  text-align: right;
+}
+.dlp-details dt {
+  opacity: 0.7;
+}
+.dlp-timeline p {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid #7896b522;
+  font-size: 12px;
+  padding-bottom: 8px;
+}
+.dlp-event {
+  border-top: 1px solid #7896b533;
+  padding: 14px 0;
+  overflow-wrap: anywhere;
+}
+.dlp-event small {
+  display: block;
+  opacity: 0.7;
+}
+@keyframes dlp-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (max-width: 800px) {
+  .dlp-columns {
+    grid-template-columns: 1fr;
+  }
+  .dlp-metrics {
+    grid-template-columns: 1fr 1fr;
+  }
+  .dlp-hero {
+    padding: 22px;
+    align-items: start;
+  }
+  .dlp-hero > svg {
+    display: none;
+  }
+  .dlp-card {
+    padding: 18px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dlp-workspace {
+    animation: none;
+  }
+}
+.dlp-required {
+  max-width: 1450px;
+  margin: auto;
+  padding: 30px;
+  display: grid;
+  gap: 22px;
+}
+.dlp-required-notice {
+  display: flex;
+  gap: 22px;
+  padding: 28px;
+  border: 1px solid #efb86288;
+  background: linear-gradient(130deg, #30261b, #101c30);
+  border-radius: 20px;
+}
+.dlp-required-notice > svg {
+  color: #efbd77;
+  flex-shrink: 0;
+}
+.dlp-required-notice h1 {
+  font-size: clamp(25px, 3vw, 38px);
+  margin: 14px 0;
+}
+.dlp-required-notice p {
+  line-height: 1.6;
+  max-width: 1000px;
+}
+.dlp-device-action {
+  display: grid;
+  gap: 12px;
+  margin: 16px 0;
+}
+.dlp-device-action .btn {
+  white-space: normal;
+  text-align: left;
+  justify-content: center;
+}
+.dlp-policy-control {
+  padding: 18px;
+  margin: 18px 0;
+  background: #23375044;
+  border: 1px solid #7896b53b;
+  border-radius: 12px;
+}
+.dlp-policy-control select {
+  max-width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  background: #101c30;
+  color: #e5edf8;
+  border: 1px solid #7896b555;
+}
+@media (max-width: 600px) {
+  .dlp-required {
+    padding: 14px;
+  }
+  .dlp-required-notice {
+    padding: 18px;
+  }
+  .dlp-required-notice > svg {
+    display: none;
+  }
+  .dlp-policy-control {
+    padding: 12px;
+  }
+}

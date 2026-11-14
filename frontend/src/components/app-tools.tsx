@@ -1,3 +1,7 @@
+/* Назначение файла: Объединяет вспомогательные элементы управления рабочими экранами.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Bell, Search, ShieldAlert } from "lucide-react";

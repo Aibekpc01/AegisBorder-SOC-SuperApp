@@ -1,3 +1,7 @@
+/* Назначение файла: Показывает профиль пользователя и формы изменения разрешённых персональных данных.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -19,6 +23,7 @@ import { date, roles } from "../lib/utils";
 import { Button } from "./ui/button";
 import { Dialog } from "./ui/dialog";
 import { BlockGuide } from "./block-guide";
+import { useRoleCatalog } from "../lib/access";
 
 export function UserAvatar({
   user,
@@ -36,11 +41,10 @@ export function UserAvatar({
           alt={`Фото ${profile.full_name || user.username}`}
         />
       ) : (
-        <span>
-          {String(profile.full_name || user.username || "?")
-            .slice(0, 2)
-            .toUpperCase()}
-        </span>
+        <img
+          src={`/api/v1/users/${user.id}/avatar/presets/0`}
+          alt={`Аватар ${profile.full_name || user.username}`}
+        />
       )}
     </div>
   );
@@ -66,6 +70,8 @@ export function ProfileEditor({
   admin: boolean;
   onChanged: () => void;
 }) {
+  const catalog = useRoleCatalog();
+  const [avatarPage, setAvatarPage] = useState(0);
   const client = useQueryClient(),
     [tab, setTab] = useState("profile"),
     [message, setMessage] = useState(""),
@@ -83,6 +89,10 @@ export function ProfileEditor({
     work: () => Promise<unknown>,
     notice = "Изменения сохранены",
   ) {
+    if (profile.data?.can_edit_profile === false) {
+      setMessage("Вышестоящая учётная запись доступна только для просмотра");
+      return;
+    }
     setBusy(true);
     setMessage("");
     try {
@@ -108,8 +118,11 @@ export function ProfileEditor({
           <span className="eyebrow">ЛИЧНАЯ КАРТОЧКА</span>
           <h2>{p.full_name || person.username}</h2>
           <p>
-            {p.position || roles[person.role]} ·{" "}
-            {p.department || "Подразделение не указано"}
+            {p.position ||
+              person.role_label ||
+              roles[person.role] ||
+              person.role}{" "}
+            · {p.department || "Подразделение не указано"}
           </p>
           <span className="badge">
             {person.active ? "Учётная запись активна" : "Доступ отключён"}
@@ -178,6 +191,45 @@ export function ProfileEditor({
               </Button>
             )}
           </div>
+          <details className="avatar-picker">
+            <summary>Выбрать автоматически созданный аватар</summary>
+            <p>
+              Аватары создаются внутри приложения. Фотографии и личные данные не
+              отправляются внешним сервисам.
+            </p>
+            <div className="avatar-options">
+              {Array.from({ length: 8 }, (_, i) => avatarPage * 8 + i).map(
+                (variant) => (
+                  <button
+                    key={variant}
+                    aria-label={`Выбрать аватар ${variant + 1}`}
+                    disabled={busy}
+                    onClick={() =>
+                      save(
+                        () =>
+                          api(`/users/${userId}/avatar/generate`, "POST", {
+                            variant,
+                          }),
+                        "Аватар сохранён",
+                      )
+                    }
+                  >
+                    <img
+                      src={`/api/v1/users/${userId}/avatar/presets/${variant}`}
+                      alt=""
+                    />
+                  </button>
+                ),
+              )}
+            </div>
+            <button
+              className="btn btn-outline"
+              disabled={busy}
+              onClick={() => setAvatarPage((avatarPage + 1) % 100)}
+            >
+              Другие варианты
+            </button>
+          </details>
           <form
             className="personal-form"
             onSubmit={(e) => {
@@ -233,10 +285,12 @@ export function ProfileEditor({
             </div>
             <div>
               <small>Текущая роль</small>
-              <strong>{roles[person.role]}</strong>
+              <strong>
+                {person.role_label || roles[person.role] || person.role}
+              </strong>
             </div>
           </div>
-          {admin ? (
+          {admin && person.can_edit_profile !== false ? (
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -254,9 +308,14 @@ export function ProfileEditor({
               <label>
                 Роль
                 <select name="role" defaultValue={person.role}>
-                  {Object.entries(roles).map(([v, l]) => (
-                    <option value={v} key={v}>
-                      {l}
+                  <option value={person.role}>{person.role_label || roles[person.role] || person.role}</option>
+                  {(catalog.data || []).filter(item=>item.name!==person.role).map((item) => (
+                    <option
+                      value={item.name}
+                      key={item.name}
+                      disabled={!item.can_assign && item.name !== person.role}
+                    >
+                      {item.label}
                     </option>
                   ))}
                 </select>
@@ -390,6 +449,11 @@ export function UsersWorkspace({
   onChanged: () => void;
 }) {
   const [confirmAccess, setConfirmAccess] = useState<Row | null>(null);
+  const [listState, setListState] = useState("active");
+  const [pending, setPending] = useState<{ user: Row; action: string } | null>(
+    null,
+  );
+  const catalog = useRoleCatalog();
   const client = useQueryClient(),
     [q, setQ] = useState(""),
     [role, setRole] = useState(""),
@@ -399,12 +463,12 @@ export function UsersWorkspace({
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false);
   const users = useQuery({
-    queryKey: ["users-workspace"],
-    queryFn: () => api("/users"),
+    queryKey: ["users-workspace", listState],
+    queryFn: () => api("/users?state=" + listState),
   });
   const items = (users.data || []).filter(
     (u: Row) =>
-      (showInactive || u.active) &&
+      (listState === "deleted" || showInactive || u.active) &&
       (!role || u.role === role) &&
       `${u.username} ${u.profile.full_name} ${u.profile.department} ${u.profile.position}`
         .toLowerCase()
@@ -434,6 +498,26 @@ export function UsersWorkspace({
           <Plus size={17} /> Добавить пользователя
         </Button>
       </div>
+      <div className="row wrap">
+        <Button
+          variant="outline"
+          aria-pressed={listState === "active"}
+          onClick={() => setListState("active")}
+        >
+          Пользователи
+        </Button>
+        <Button
+          variant="outline"
+          aria-pressed={listState === "deleted"}
+          onClick={() => setListState("deleted")}
+        >
+          Корзина пользователей
+        </Button>
+        <p>
+          Удаление отзывает входы и сохраняет историю. После восстановления
+          доступ включается отдельно.
+        </p>
+      </div>
       <div className="toolbar">
         <div className="search-field">
           <Search size={17} />
@@ -450,9 +534,9 @@ export function UsersWorkspace({
           onChange={(e) => setRole(e.target.value)}
         >
           <option value="">Все роли</option>
-          {Object.entries(roles).map(([v, l]) => (
-            <option key={v} value={v}>
-              {l}
+          {catalog.data?.map((item) => (
+            <option key={item.name} value={item.name}>
+              {item.label}
             </option>
           ))}
         </select>
@@ -483,7 +567,7 @@ export function UsersWorkspace({
               <div className="row between">
                 <UserAvatar user={u} large />
                 <span className={"badge " + (u.active ? "" : "red")}>
-                  {roles[u.role]}
+                  {u.role_label || roles[u.role] || u.role}
                 </span>
               </div>
               <h3>{u.profile.full_name || u.username}</h3>
@@ -510,15 +594,17 @@ export function UsersWorkspace({
               <Button variant="outline" onClick={() => setEditing(u.id)}>
                 Настроить карточку
               </Button>
-              {u.id !== currentUser.id && (
-                <Button
-                  variant="ghost"
-                  disabled={busy}
-                  onClick={() => setConfirmAccess(u)}
-                >
-                  {u.active ? "Отключить" : "Включить"}
-                </Button>
-              )}
+              {listState === "active" &&
+                u.id !== currentUser.id &&
+                (u.role_rank ?? 0) <= (currentUser.role_rank ?? 0) && (
+                  <Button
+                    variant="ghost"
+                    disabled={busy}
+                    onClick={() => setConfirmAccess(u)}
+                  >
+                    {u.active ? "Отключить" : "Включить"}
+                  </Button>
+                )}
               <details className="ultra-card-menu">
                 <summary aria-label={`Действия с пользователем ${u.username}`}>
                   <MoreHorizontal size={18} />
@@ -527,11 +613,53 @@ export function UsersWorkspace({
                   <button onClick={() => setEditing(u.id)}>
                     Редактировать профиль и роль
                   </button>
-                  {u.id !== currentUser.id && (
-                    <button disabled={busy} onClick={() => setConfirmAccess(u)}>
-                      {u.active ? "Отключить доступ" : "Восстановить доступ"}
-                    </button>
-                  )}
+                  {u.id !== currentUser.id &&
+                    (u.role_rank ?? 0) <= (currentUser.role_rank ?? 0) && (
+                      <>
+                        {listState === "active" ? (
+                          <>
+                            <button
+                              disabled={busy}
+                              onClick={() =>
+                                setPending({ user: u, action: "delete" })
+                              }
+                            >
+                              Удалить пользователя
+                            </button>
+                            <button
+                              disabled={busy}
+                              onClick={() =>
+                                setPending({
+                                  user: u,
+                                  action: "revoke-sessions",
+                                })
+                              }
+                            >
+                              Завершить все сеансы
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            disabled={busy}
+                            onClick={() =>
+                              setPending({ user: u, action: "restore" })
+                            }
+                          >
+                            Восстановить из корзины
+                          </button>
+                        )}
+                      </>
+                    )}
+                  {listState === "active" &&
+                    u.id !== currentUser.id &&
+                    (u.role_rank ?? 0) <= (currentUser.role_rank ?? 0) && (
+                      <button
+                        disabled={busy}
+                        onClick={() => setConfirmAccess(u)}
+                      >
+                        {u.active ? "Отключить доступ" : "Восстановить доступ"}
+                      </button>
+                    )}
                 </div>
               </details>
             </div>
@@ -576,6 +704,53 @@ export function UsersWorkspace({
                 Подтвердить
               </Button>
             </div>
+          </>
+        )}
+      </Dialog>
+      <Dialog
+        open={pending !== null}
+        title={
+          pending?.action === "delete"
+            ? "Удалить пользователя"
+            : pending?.action === "restore"
+              ? "Восстановить пользователя"
+              : "Завершить сеансы пользователя"
+        }
+        onClose={() => !busy && setPending(null)}
+      >
+        {pending && (
+          <>
+            <h3>{pending.user.username}</h3>
+            <p>
+              {pending.action === "delete"
+                ? "Пользователь уйдёт в корзину и потеряет доступ. Его документы, сообщения и аудит останутся."
+                : pending.action === "restore"
+                  ? "Карточка вернётся из корзины с отключённым доступом. После проверки включите доступ отдельно."
+                  : "Все действующие входы будут отозваны. Для продолжения работы потребуется повторный вход."}
+            </p>
+            <Button
+              disabled={busy}
+              onClick={async () => {
+                setBusy(true);
+                setMessage("");
+                try {
+                  await api(
+                    `/users/${pending.user.id}${pending.action === "delete" ? "" : "/" + pending.action}`,
+                    pending.action === "delete" ? "DELETE" : "POST",
+                  );
+                  await client.invalidateQueries();
+                  setPending(null);
+                  setMessage("Действие выполнено и записано в аудит");
+                } catch (e) {
+                  setMessage((e as Error).message);
+                } finally {
+                  setBusy(false);
+                }
+              }}
+            >
+              Подтвердить
+            </Button>
+            {message && <p role="status">{message}</p>}
           </>
         )}
       </Dialog>
@@ -656,11 +831,14 @@ export function UsersWorkspace({
           <label>
             Роль
             <select name="role" defaultValue="observer">
-              {Object.entries(roles).map(([v, l]) => (
-                <option key={v} value={v}>
-                  {l}
-                </option>
-              ))}
+              <option value="observer">Наблюдатель</option>
+              {catalog.data
+                ?.filter((item) => item.can_assign && item.name!=="observer")
+                .map((item) => (
+                  <option key={item.name} value={item.name}>
+                    {item.label}
+                  </option>
+                ))}
             </select>
           </label>
           <Button disabled={busy}>

@@ -1,3 +1,6 @@
+# Назначение файла: Готовит окружение для публичной демонстрации.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 """Generate separate local credentials, never print secrets."""
 
 import secrets

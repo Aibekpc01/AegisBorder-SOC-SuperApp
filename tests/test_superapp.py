@@ -1,3 +1,6 @@
+# Назначение файла: Проверяет подсистему superapp. Содержит проверки ожидаемого поведения, а не код рабочего сервера.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 import json
 
 from app.command.models import utcnow

@@ -1,3 +1,7 @@
+/* Назначение файла: Проверяет подсистему ultra preview. Содержит проверки ожидаемого поведения, а не код рабочего сервера.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 /* global process, console, document, innerWidth, fetch */
 import { chromium } from "@playwright/test";
 import { mkdir } from "node:fs/promises";

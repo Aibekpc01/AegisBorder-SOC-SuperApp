@@ -1,3 +1,7 @@
+/* Назначение файла: Содержит экраны дополнительных модулей суперприложения.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 import { useState, type FormEvent, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation } from "react-router-dom";
@@ -22,6 +26,7 @@ import "../modules.css";
 import { AcademyHub, TeamProject } from "./project-experience";
 import { InfrastructureScene, DigitalCore } from "./ultra-visuals";
 import { CorporateIntegrations } from "./corporate-integrations";
+import { SecurityAnalytics } from "./supper-experience";
 
 type User = { id: number; role: string };
 type Incident = {
@@ -42,6 +47,7 @@ type Task = {
   revision: number;
   owner_id: number;
   assignee_id: number | null;
+  reviewer_id: number | null;
   incident_id: number | null;
   due: string | null;
 };
@@ -144,7 +150,7 @@ export function SuperappModules({ page, user }: { page: string; user: User }) {
     case "scenario-builder":
       return <ScenarioBuilder user={user} />;
     case "security-analytics":
-      return <Analytics />;
+      return <SecurityAnalytics />;
     default:
       return null;
   }
@@ -203,6 +209,15 @@ function Tasks({ user }: { user: User }) {
     [pending, setPending] = useState<{ action: string; tasks: Task[] } | null>(
       null,
     );
+  const [historyId, setHistoryId] = useState<number | null>(null);
+  const history = useQuery({
+    queryKey: ["task-history", historyId],
+    queryFn: () =>
+      api<{ id: number; actor_id: number; action: string; time: string }[]>(
+        `${base}/tasks/${historyId}/history`,
+      ),
+    enabled: historyId !== null,
+  });
   const tasks = useQuery({
     queryKey: ["superapp-tasks", state],
     queryFn: () => api<Task[]>(base + "/tasks?state=" + state),
@@ -228,6 +243,7 @@ function Tasks({ user }: { user: User }) {
     await action.run(async () => {
       await api(base + "/tasks", "POST", {
         title: data.get("title"),
+        reviewer_id: data.get("reviewer") ? Number(data.get("reviewer")) : null,
         description: data.get("description"),
         incident_id: Number(data.get("incident")) || null,
         assignee_id: Number(data.get("assignee")) || null,
@@ -321,6 +337,24 @@ function Tasks({ user }: { user: User }) {
             <textarea name="description" maxLength={5000} />
           </label>
           <div className="module-form-grid">
+            {user.role !== "demo" && (
+              <label>
+                Согласующий результата
+                <select name="reviewer">
+                  <option value="">Постановщик задачи</option>
+                  {operators.data
+                    ?.filter((o) => o.id !== user.id)
+                    .map((o) => (
+                      <option key={o.id} value={o.id}>
+                        {o.username}
+                      </option>
+                    ))}
+                </select>
+                <small>
+                  Выберите руководителя с ролью аналитика или администратора.
+                </small>
+              </label>
+            )}
             <label>
               Инцидент
               <select name="incident">
@@ -428,6 +462,18 @@ function Tasks({ user }: { user: User }) {
             <span className="badge">{t.status}</span>
             <h3>{t.title}</h3>
             <p>{t.description}</p>
+            <p>
+              Исполнитель:{" "}
+              {operators.data?.find((o) => o.id === t.assignee_id)?.username ||
+                (t.assignee_id ? `#${t.assignee_id}` : "Не назначен")}{" "}
+              · Согласующий:{" "}
+              {operators.data?.find(
+                (o) => o.id === (t.reviewer_id || t.owner_id),
+              )?.username || `#${t.reviewer_id || t.owner_id}`}
+            </p>
+            <Button variant="outline" onClick={() => setHistoryId(t.id)}>
+              История задачи
+            </Button>
             <small>
               Задача #{t.id} · версия {t.revision}
               {t.due ? ` · срок ${date(t.due)}` : ""}
@@ -437,6 +483,7 @@ function Tasks({ user }: { user: User }) {
               !["observer", "demo_viewer"].includes(user.role) &&
               (user.role === "admin" ||
                 t.owner_id === user.id ||
+                t.reviewer_id === user.id ||
                 t.assignee_id === user.id) && (
                 <div className="row wrap">
                   {transitions[t.status]
@@ -444,7 +491,7 @@ function Tasks({ user }: { user: User }) {
                       (s) =>
                         s !== "Завершена" ||
                         user.role === "admin" ||
-                        t.owner_id === user.id,
+                        (t.reviewer_id || t.owner_id) === user.id,
                     )
                     .map((s) => (
                       <Button
@@ -469,6 +516,23 @@ function Tasks({ user }: { user: User }) {
         ))}
       </div>
       {tasks.data?.length === 0 && <p>Задач пока нет.</p>}
+      <Dialog
+        title={`История задачи #${historyId}`}
+        open={historyId !== null}
+        onClose={() => setHistoryId(null)}
+      >
+        {history.isPending && <p role="status">Загрузка истории…</p>}
+        {history.error && <p role="alert">{history.error.message}</p>}
+        {history.data?.map((row) => (
+          <article key={row.id}>
+            <small>
+              {date(row.time)} · сотрудник #{row.actor_id}
+            </small>
+            <p>{row.action}</p>
+          </article>
+        ))}
+        {history.data?.length === 0 && <p>Записей пока нет.</p>}
+      </Dialog>
       <Dialog
         title="Редактировать задачу"
         open={editing !== null}
@@ -1300,67 +1364,6 @@ function ScenarioBuilder({ user }: { user: User }) {
           <Link to="/app/incidents">Перейти к расследованию</Link>
         </p>
       )}
-    </Surface>
-  );
-}
-
-function Analytics() {
-  const incidents = useQuery({
-    queryKey: ["superapp-incidents"],
-    queryFn: () => api<Incident[]>("/incidents"),
-  });
-  const items = incidents.data || [];
-  const groups = (key: "status" | "device" | "rule_id") =>
-    Object.entries(
-      items.reduce<Record<string, number>>((all, i) => {
-        all[i[key]] = (all[i[key]] || 0) + 1;
-        return all;
-      }, {}),
-    ).sort((a, b) => b[1] - a[1]);
-  return (
-    <Surface error={incidents.error}>
-      <h2>Аналитика безопасности</h2>
-      <p>
-        Срез последних 500 доступных инцидентов. Это показатели учебной базы, а
-        не оценка защищённости реальной инфраструктуры.
-      </p>
-      {incidents.isPending && <p role="status">Загрузка аналитики…</p>}
-      <div className="module-card-grid">
-        <article className="module-card">
-          <h3>Инцидентов: {items.length}</h3>
-          <p>
-            Средний риск:{" "}
-            {items.length
-              ? Math.round(items.reduce((n, i) => n + i.risk, 0) / items.length)
-              : 0}
-            /100
-          </p>
-          <p>С риском ≥70: {items.filter((i) => i.risk >= 70).length}</p>
-        </article>
-        {(["status", "device", "rule_id"] as const).map((key) => (
-          <article className="module-card" key={key}>
-            <h3>
-              {
-                {
-                  status: "По статусам",
-                  device: "По устройствам",
-                  rule_id: "По правилам",
-                }[key]
-              }
-            </h3>
-            {groups(key).map(([name, count]) => (
-              <div key={name} className="analytics-bar">
-                <span>{name}</span>
-                <meter min={0} max={Math.max(items.length, 1)} value={count} />
-                <b>{count}</b>
-              </div>
-            ))}
-          </article>
-        ))}
-      </div>
-      <Link className="btn btn-outline" to="/app/reports">
-        Сохранённые отчёты и PDF
-      </Link>
     </Surface>
   );
 }

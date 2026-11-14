@@ -1,3 +1,7 @@
+/* Назначение файла: Показывает презентационный обзор проекта и пользовательских сценариев.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 import { PresenceBadge } from "./presence-workspace";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
@@ -519,7 +523,7 @@ const extraNames: Record<string, string> = {
   settings: "Настройки",
   help: "Справка и обучение",
   commission: "Демонстрация проекта",
-  development: "Развитие Supper",
+  development: "Развитие Supperapp",
   "scenario-builder": "Конструктор сценариев",
   team: "Чат",
 };
@@ -1139,7 +1143,7 @@ export function TeamProject({ user }: { user: { id: number; role: string } }) {
               placeholder="Имя или подразделение…"
             />
           </label>
-          <div className="team-member-list">
+          <div className="team-member-list" role="region" aria-label="Список участников команды" tabIndex={0}>
             {team.data?.members
               .filter((member) =>
                 (member.full_name + member.username + member.department)

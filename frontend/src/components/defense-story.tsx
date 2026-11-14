@@ -1,3 +1,7 @@
+/* Назначение файла: Показывает учебную историю атаки с хакером, оператором и переключением модулей. Сама история не выполняет действия на устройствах.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -47,7 +51,7 @@ export function DefenseStory({ publicMode = false }: { publicMode?: boolean }) {
     >
       <header className="defense-heading">
         <span className="experience-kicker">
-          <ShieldCheck size={17} /> AegisBorder Supper / ИСТОРИЯ ЗАЩИТЫ
+          <ShieldCheck size={17} /> AegisBorder Supperapp / ИСТОРИЯ ЗАЩИТЫ
         </span>
         <h2>
           Попытка атаки.
@@ -166,7 +170,7 @@ export function DefenseStory({ publicMode = false }: { publicMode?: boolean }) {
           />
           <figcaption>
             {(!publicMode || publicEmblemsEnabled) && <Emblem kind="knb" />}
-            <span>AegisBorder Supper</span>
+            <span>AegisBorder Supperapp</span>
             <b>Оператор центра безопасности</b>
             <p>{phase.action}</p>
           </figcaption>

@@ -1,3 +1,7 @@
+/* Назначение файла: Проверяет подсистему command.spec. Содержит проверки ожидаемого поведения, а не код рабочего сервера.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 import { test, expect } from "@playwright/test";
 import { randomUUID } from "node:crypto";
 import { spawnSync } from "node:child_process";

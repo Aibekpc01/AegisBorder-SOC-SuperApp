@@ -1,3 +1,6 @@
+# Назначение файла: Проверяет подсистему detection_boundaries. Содержит проверки ожидаемого поведения, а не код рабочего сервера.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 from datetime import timedelta
 
 import pytest

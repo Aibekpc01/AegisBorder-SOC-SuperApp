@@ -1,3 +1,6 @@
+# Назначение файла: Предоставляет операции рабочего пространства расследования и связанных документов.
+# Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+
 """Редактируемые материалы расследования. Храним проверенное дерево, не HTML."""
 
 import hashlib
@@ -5,12 +8,21 @@ import hmac
 import json
 from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from pydantic import BaseModel, ConfigDict, Field, field_validator
-from sqlalchemy import select, update
+from sqlalchemy import String, cast, select, update
 
 from .db import get_db
-from .models import DocumentComment, DocumentVersion, Incident, User, WorkspaceDocument, utcnow
+from .models import (
+    DocumentComment,
+    DocumentVersion,
+    Incident,
+    Setting,
+    User,
+    WorkspaceDocument,
+    utcnow,
+)
+from .rbac import is_admin, role_base
 from .security import audit, current, operator, secret, visible
 from .serialization import record
 
@@ -183,8 +195,8 @@ def document(db, doc_id, user):
 
 
 def can_write(row, user):
-    return user.role not in ("observer", "demo_viewer") and (
-        user.role == "admin" or row.owner_id == user.id or row.assignee_id == user.id
+    return role_base(user) not in ("observer", "demo_viewer") and (
+        is_admin(user) or row.owner_id == user.id or row.assignee_id == user.id
     )
 
 
@@ -232,8 +244,11 @@ def add_version(db, row, user):
 def result(db, row, user, full=True):
     check_integrity(db, row)
     value = record(row)
-    value["can_edit"] = can_write(row, user)
-    value["can_approve"] = value["can_edit"] and user.role in ("admin", "analyst")
+    lifecycle = db.get(Setting, f"document-lifecycle:{row.id}")
+    value["lifecycle"] = lifecycle.value["state"] if lifecycle else "active"
+    value["can_manage"] = can_write(row, user)
+    value["can_edit"] = can_write(row, user) and value["lifecycle"] == "active"
+    value["can_approve"] = value["can_edit"] and role_base(user) in ("admin", "analyst")
     if full:
         value["comments"] = [
             record(c)
@@ -267,11 +282,16 @@ def templates(user=Depends(current)):
 
 @router.get("/documents")
 def documents(
-    q: str = "", incident_id: int | None = None, user=Depends(current), db=Depends(get_db)
+    q: str = "", incident_id: int | None = None,
+    state: Literal["active", "archived", "deleted"] = "active",
+    user=Depends(current), db=Depends(get_db)
 ):
     if len(q) > 200:
         raise HTTPException(422, "Слишком длинный поисковый запрос")
     query = scope(select(WorkspaceDocument), user)
+    query = query.outerjoin(Setting, Setting.key == "document-lifecycle:" + cast(WorkspaceDocument.id, String))
+    condition = Setting.value["state"].as_string() == state
+    query = query.where((Setting.key.is_(None) | condition) if state == "active" else condition)
     if q:
         query = query.where(
             WorkspaceDocument.title.icontains(q) | WorkspaceDocument.plain_text.icontains(q)
@@ -282,6 +302,48 @@ def documents(
         result(db, row, user, False)
         for row in db.scalars(query.order_by(WorkspaceDocument.updated.desc()).limit(200))
     ]
+
+
+class DocumentLifecycle(BaseModel):
+    model_config = {"extra": "forbid"}
+    action: Literal["archive", "delete", "restore"]
+    revision: int = Field(ge=1)
+
+
+@router.post("/documents/{doc_id}/lifecycle")
+def document_lifecycle(doc_id: int, data: DocumentLifecycle, user=Depends(operator), db=Depends(get_db)):
+    row = document(db, doc_id, user)
+    check_integrity(db, row)
+    if not can_write(row, user):
+        raise HTTPException(403, "Недостаточно прав для управления документом")
+    if data.action == "delete" and (row.incident_id or row.status == "Утверждён"):
+        raise HTTPException(409, "Утверждённый или связанный с инцидентом документ можно архивировать")
+    changed = db.execute(update(WorkspaceDocument).where(
+        WorkspaceDocument.id == row.id, WorkspaceDocument.revision == data.revision,
+    ).values(revision=data.revision + 1, updated=utcnow()).execution_options(synchronize_session=False))
+    if changed.rowcount != 1:
+        raise HTTPException(409, "Документ изменился. Обновите список.")
+    state = {"archive": "archived", "delete": "deleted", "restore": "active"}[data.action]
+    lifecycle = db.get(Setting, f"document-lifecycle:{row.id}")
+    if lifecycle:
+        lifecycle.value = {"state": state}
+    else:
+        db.add(Setting(key=f"document-lifecycle:{row.id}", value={"state": state}))
+    db.refresh(row)
+    add_version(db, row, user)
+    audit(db, user.id, f"Workspace: документ {row.id}, {data.action}, версия {row.revision}")
+    db.commit()
+    return result(db, row, user)
+
+
+@router.get("/documents/{doc_id}/export")
+def export_document(doc_id: int, user=Depends(current), db=Depends(get_db)):
+    row = document(db, doc_id, user)
+    check_integrity(db, row)
+    text = f"{row.title}\nВерсия {row.revision} · {row.status}\n\n{row.plain_text}"
+    return Response(text, media_type="text/plain; charset=utf-8", headers={
+        "Content-Disposition": f'attachment; filename="aegis-document-{row.id}-v{row.revision}.txt"',
+    })
 
 
 @router.post("/documents", status_code=201)
@@ -328,6 +390,9 @@ def get_document(doc_id: int, user=Depends(current), db=Depends(get_db)):
 @router.put("/documents/{doc_id}")
 def save(doc_id: int, data: SaveDocument, user=Depends(operator), db=Depends(get_db)):
     row = document(db, doc_id, user)
+    lifecycle = db.get(Setting, f"document-lifecycle:{row.id}")
+    if lifecycle and lifecycle.value["state"] != "active":
+        raise HTTPException(409, "Перед редактированием восстановите документ")
     if not can_write(row, user):
         raise HTTPException(403, "Редактирование доступно автору, ответственному и администратору")
     check_integrity(db, row)
@@ -346,7 +411,7 @@ def save(doc_id: int, data: SaveDocument, user=Depends(operator), db=Depends(get
         if (
             not target
             or not target.active
-            or target.role not in ("admin", "analyst", "demo")
+            or role_base(target, db) not in ("admin", "analyst", "demo")
             or (not demo_only and target.role == "demo")
         ):
             raise HTTPException(422, "Недопустимый ответственный")
@@ -360,7 +425,7 @@ def save(doc_id: int, data: SaveDocument, user=Depends(operator), db=Depends(get
     if (
         data.status == "Утверждён"
         and row.status != "Утверждён"
-        and user.role not in ("admin", "analyst")
+        and role_base(user) not in ("admin", "analyst")
     ):
         raise HTTPException(403, "Утверждение доступно аналитику и администратору")
     changed_body = (

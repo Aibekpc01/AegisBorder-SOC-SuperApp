@@ -1,3 +1,7 @@
+/* Назначение файла: Проверяет подсистему ultra production. Содержит проверки ожидаемого поведения, а не код рабочего сервера.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 /* global console */
 import { chromium, expect } from '@playwright/test';
 import { writeFile, mkdir } from 'node:fs/promises';

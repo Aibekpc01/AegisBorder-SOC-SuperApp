@@ -1,3 +1,7 @@
+/* Назначение файла: Стили corporate-identity: задают внешний вид соответствующих классов и адаптацию экрана. Применяются через импорты интерфейса.
+ * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
+ */
+
 /* Emblem-led identity: navy surfaces, teal actions, restrained gold details. */
 .institution-emblem {
   position: relative;
