@@ -14,6 +14,12 @@ from app.command.dlp import DlpDevice
 from app.command.models import AuthSession, Setting, SiteVisit, User, utcnow
 
 
+def assign_by_leader(admin, user_id):
+    with admin.factory() as db:
+        db.add(Setting(key=f"dlp-required:{user_id}", value={"required": True, "assigned_by": 0}))
+        db.commit()
+
+
 def prepare(admin, monkeypatch, assigned=True):
     me = admin.get("/api/v1/auth/me").json()
     with admin.factory() as db:
@@ -23,7 +29,9 @@ def prepare(admin, monkeypatch, assigned=True):
         sid = session.id
     monkeypatch.setenv("DLP_ENFORCE", "true")
     if assigned:
-        assert admin.post("/api/v1/dlp/assign", json={"visit_id": sid}).status_code == 200
+        # Назначение себе запрещено; имитируем назначение другим руководителем.
+        assert admin.post("/api/v1/dlp/assign", json={"visit_id": sid}).status_code == 409
+        assign_by_leader(admin, me["id"])
     package = admin.post("/api/v1/dlp/enroll", json={"name": "NATIVE TEST FIXTURE", "visit_id": sid})
     assert package.status_code == 201, package.text
     with zipfile.ZipFile(BytesIO(package.content)) as archive:
@@ -111,7 +119,10 @@ def test_roles_optional_until_leadership_assignment(admin, monkeypatch):
         user = db.scalar(select(User).where(User.username == "admin"))
         user.role = "creator"
         db.commit()
-    assert admin.post("/api/v1/dlp/assign", json={"visit_id": sid}).status_code == 200
+    # Создатель не может закрыть доступ самому себе; назначение другим руководителем действует.
+    assert admin.post("/api/v1/dlp/assign", json={"visit_id": sid}).status_code == 409
+    assert admin.get("/api/v1/dashboard").status_code == 200
+    assign_by_leader(admin, admin.get("/api/v1/auth/me").json()["id"])
     assert admin.get("/api/v1/dashboard").status_code == 428
 
 

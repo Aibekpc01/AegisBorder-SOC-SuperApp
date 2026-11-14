@@ -150,7 +150,7 @@ def devices(user=Depends(current), db=Depends(get_db)):
         network = evaluate(visit.ip, config)
         from .dlp_gate import required
         from .rbac import dlp_allowed, role_info
-        can_assign = owner.active and dlp_allowed(owner, db) and "Windows" in visit.device and (
+        can_assign = owner.active and owner.id != user.id and dlp_allowed(owner, db) and "Windows" in visit.device and (
             role_info(user.role, db)["rank"] >= max(40, role_info(owner.role, db)["rank"]))
         rows.append({"id": visit.session_id[:12], "user_id": owner.id,
                      "dlp_visit_id": visit.session_id, "dlp_required": required(db, owner), "dlp_can_assign": can_assign,

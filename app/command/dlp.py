@@ -312,8 +312,8 @@ def assign(data: Assignment, actor=Depends(technician), db=Depends(get_db)):
         raise HTTPException(422, "Сотрудник должен иметь роль разработчика или выше")
     if role_info(actor.role, db)["rank"] < 40:
         raise HTTPException(403, "Назначать установку может создатель или руководитель")
-    if target.id != actor.id:
-        require_target(actor, target, db)
+    # Себе назначить нельзя: иначе руководитель закроет собственный доступ к рабочим функциям.
+    require_target(actor, target, db)
     key = f"dlp-required:{target.id}"
     row = db.get(Setting, key)
     value = {"required": True, "assigned_by": actor.id, "visit_id": visit.session_id, "created": utcnow().timestamp()}
