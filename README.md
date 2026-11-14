@@ -1,4 +1,23 @@
-# AegisBorder Supperapp — версия 0.3
+# AegisBorder Supperapp
+
+Веб-система для обнаружения и расследования **синтетических** киберинцидентов и обучения сотрудников: события → объяснимые правила → инцидент → расследование → PDF-отчёт. Работает в закрытой сети, решение принимает человек.
+
+**Стек:** FastAPI · SQLAlchemy · PostgreSQL 16 · Alembic · React 19 · TypeScript · Vite · TanStack Query · Tiptap · Playwright.
+
+| Документ | Содержание |
+|---|---|
+| [FUNCTIONALITY.md](FUNCTIONALITY.md) | Реальные функции, 29 разделов, роли |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Схема, поток данных, безопасность, решения |
+| [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) | Визуальный язык «Цифровой рубеж», токены, компоненты |
+| [TEST_REPORT.md](TEST_REPORT.md) | Результаты тестов и замеров |
+| [COMPETITION_PRESENTATION.md](COMPETITION_PRESENTATION.md) | Защита проекта: сценарий показа, вопросы и ответы |
+| [CHANGELOG.md](CHANGELOG.md) · [PROJECT_AUDIT.md](PROJECT_AUDIT.md) | Изменения и аудит |
+
+Быстрый запуск: `docker compose up --build -d --wait`, затем http://127.0.0.1:8000 (подробно ниже).
+
+---
+
+## История версии 0.3
 
 Актуальная проверка: [готовность к презентации, исправления и идеи развития](docs/presentation-audit-2026-10-17.md), [сценарий показа на 8–10 минут](docs/presentation-runbook-2026-10-17.md).
 
