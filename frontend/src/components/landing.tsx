@@ -1,4 +1,7 @@
-/* Назначение файла: Показывает публичную главную страницу и переходы к рабочему приложению.
+/* Назначение файла: Публичная главная страница и переходы к рабочему приложению.
+ * Композиция: первый экран «Цифровой рубеж» → возможности → интерактивный пример → порядок работы →
+ * польза → технологии и надёжность → призыв к действию → каталог модулей → о проекте.
+ * Все цифры на странице проверяемы по исходному коду; примеры подписаны как учебные.
  * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
  */
 
@@ -8,27 +11,39 @@ import {
   Activity,
   ArrowDown,
   ArrowRight,
+  BookOpen,
   Check,
   ChevronRight,
   Cpu,
+  DatabaseZap,
+  FileCheck2,
   Fingerprint,
   FlaskConical,
+  GraduationCap,
+  KeyRound,
   Layers,
   LockKeyhole,
   Network,
   Play,
+  ScrollText,
+  ServerCog,
   ShieldCheck,
   Sparkles,
   Usb,
+  UserCog,
   Users,
-  BookOpen,
+  WifiOff,
 } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 import { EmblemPair } from "./emblems";
 import { ModuleMenu, ModuleCatalog } from "./module-menu";
 import { BRAND_NAME, BRAND_TAGLINE } from "../lib/brand";
+import { modules } from "../lib/modules";
 import { useScrollReveal } from "../lib/use-scroll-reveal";
 import { OverviewShowcase } from "./project-experience";
+import { FrontierScene } from "./landing/frontier-scene";
+import { SignalPipeline } from "./landing/signal-pipeline";
+import "../styles/landing.css";
 
 const examples = [
   {
@@ -74,6 +89,7 @@ const examples = [
     route: "mass_copy",
   },
 ];
+
 const capabilities = [
   {
     Icon: Activity,
@@ -100,35 +116,111 @@ const capabilities = [
     path: "scenarios",
   },
 ];
+
+const flow = [
+  [
+    "Событие",
+    "Синтетическое действие поступает в единый обработчик, проходит проверку и сохраняется в базе.",
+  ],
+  [
+    "Анализ",
+    "Правила проверяют признаки, количество событий и временные окна. Причина срабатывания видна оператору.",
+  ],
+  [
+    "Расследование",
+    "Оператор изучает доказательства, добавляет выводы и меняет статус инцидента.",
+  ],
+  [
+    "Отчёт",
+    "Результат расследования сохраняется. По инциденту можно сформировать PDF с русским текстом.",
+  ],
+];
+
+/** Факты первого экрана. Источники: lib/modules.ts, app/command/scenarios.py, app/command/rbac.py. */
+const facts = [
+  { value: String(modules.length), label: "направлений платформы" },
+  { value: "15", label: "учебных сценариев атак" },
+  { value: "11", label: "ролей с серверной иерархией" },
+  { value: "0", label: "внешних сервисов и CDN" },
+];
+
+const benefits = [
+  {
+    Icon: Activity,
+    audience: "Оператору",
+    title: "Видно, что произошло и почему",
+    points: [
+      "Единая лента событий с поиском и фильтрами",
+      "Объяснение срабатывания каждого правила",
+      "Доказательства и хронология в карточке инцидента",
+    ],
+  },
+  {
+    Icon: UserCog,
+    audience: "Руководителю",
+    title: "Контроль без ручных сводок",
+    points: [
+      "Статусы, ответственные и сроки по каждому случаю",
+      "Журнал действий с проверкой целостности",
+      "PDF-отчёт по расследованию в один шаг",
+    ],
+  },
+  {
+    Icon: GraduationCap,
+    audience: "Подразделению",
+    title: "Подготовка без риска",
+    points: [
+      "15 сценариев на синтетических данных",
+      "Академия, справка и пошаговые подсказки",
+      "Режим демонстрации для показа и разбора",
+    ],
+  },
+];
+
+const reliability = [
+  {
+    Icon: KeyRound,
+    title: "Защищённый вход",
+    text: "Пароли хранятся в виде Argon2-хешей. Сеанс — в HttpOnly-cookie с SameSite=Strict, лимиты попыток по адресу и логину.",
+  },
+  {
+    Icon: UserCog,
+    title: "Роли и иерархия",
+    text: "Права проверяет сервер: пользователь не может изменить роль выше собственной. Разделы скрываются по полномочиям.",
+  },
+  {
+    Icon: ScrollText,
+    title: "Журнал с цепочкой подписей",
+    text: "Каждое действие фиксируется и подписывается HMAC-SHA256 вместе с предыдущей записью. Изменение старой записи разрывает цепочку и видно при проверке.",
+  },
+  {
+    Icon: WifiOff,
+    title: "Закрытый контур",
+    text: "Ни одного внешнего шрифта, CDN или счётчика. Приложение и база разворачиваются локально одной командой Docker Compose.",
+  },
+  {
+    Icon: DatabaseZap,
+    title: "Надёжное хранение",
+    text: "PostgreSQL 16 и версионируемые миграции Alembic. Документы сохраняют историю версий и защищены от конфликтов правок.",
+  },
+  {
+    Icon: FileCheck2,
+    title: "Проверено тестами",
+    text: "Серверные тесты pytest, клиентские Vitest и сквозные сценарии Playwright покрывают вход, роли, инциденты, документы и интеграции.",
+  },
+];
+
 export function Landing() {
   const landingRef = useScrollReveal<HTMLDivElement>();
   const [example, setExample] = useState(0),
     [step, setStep] = useState(0);
   const current = examples[example];
-  const flow = [
-    [
-      "Событие",
-      "Синтетическое действие поступает в единый обработчик, проходит проверку и сохраняется в базе.",
-    ],
-    [
-      "Анализ",
-      "Правила проверяют признаки, количество событий и временные окна. Причина срабатывания видна оператору.",
-    ],
-    [
-      "Расследование",
-      "Оператор изучает доказательства, добавляет выводы и меняет статус инцидента.",
-    ],
-    [
-      "Отчёт",
-      "Результат расследования сохраняется. По инциденту можно сформировать PDF с русским текстом.",
-    ],
-  ];
   return (
-    <div className="super-landing" ref={landingRef}>
+    <div className="super-landing fr-landing" ref={landingRef}>
       <a className="skip-link" href="#landing-main">
         Перейти к содержимому
       </a>
-      <header className="landing-nav">
+      <header className="landing-nav fr-nav">
         <Link to="/" className="landing-brand">
           <EmblemPair className="landing-emblems" publicMode />
           <b>
@@ -137,10 +229,11 @@ export function Landing() {
           </b>
         </Link>
         <nav aria-label="Разделы главной страницы">
-          <Link to="/app/team">Чат</Link>
           <a href="#capabilities">Возможности</a>
-          <a href="#workflow">Как это работает</a>
           <a href="#practice">Полигон</a>
+          <a href="#workflow">Как это работает</a>
+          <a href="#reliability">Надёжность</a>
+          <Link to="/app/team">Чат</Link>
         </nav>
         <div className="row">
           <ModuleMenu />
@@ -151,90 +244,103 @@ export function Landing() {
         </div>
       </header>
       <main id="landing-main">
-        <div className="landing-team-entry">
-          <Link to="/app/team">
-            <Users size={16} /> Чат
-          </Link>
-          <Link to="/app/help">
-            <BookOpen size={16} /> Учебник по всем разделам
-          </Link>
-        </div>
-        <section className="landing-hero">
-          <div className="hero-copy">
-            <span className="landing-kicker">
-              <span className="online-dot" /> ИНТЕЛЛЕКТУАЛЬНАЯ ЗАЩИТА
-              ИНФРАСТРУКТУРЫ
-            </span>
-            <h1>
-              AegisBorder
-              <br />
-              <em>Supperapp</em>
-            </h1>
-            <p className="hero-mission">{BRAND_TAGLINE}</p>
-            <p className="hero-description">
-              Начните с понятного учебного примера: неизвестная флешка, ошибки
-              при входе или необычное копирование файлов. Система объяснит, что
-              заметила, а человек примет решение.
-            </p>
-            <a className="hero-explore" href="#capabilities">
-              Изучить возможности <ArrowDown size={15} />
-            </a>
-            <div className="hero-actions">
-              <Link className="btn btn-primary" to="/app">
-                Открыть Supperapp <ArrowRight size={17} />
-              </Link>
-              <Link className="btn btn-outline" to="/app/commission">
-                <Play size={16} /> Запустить демонстрацию
-              </Link>
+        <section className="landing-hero fr-hero" aria-labelledby="fr-hero-title">
+          <FrontierScene />
+          <div className="fr-hero-inner">
+            <div className="fr-hero-copy">
+              <div className="fr-hero-lockup">
+                <EmblemPair className="hero-identity-emblems" publicMode />
+                <span className="landing-kicker">
+                  <span className="online-dot" /> Учебный контур киберзащиты
+                </span>
+              </div>
+              <h1 id="fr-hero-title">
+                <span className="fr-h1-brand">{BRAND_NAME}</span>
+                <span className="fr-h1-line">Цифровой рубеж</span>
+                <span className="fr-h1-line fr-h1-accent">под контролем.</span>
+              </h1>
+              <p className="hero-mission">{BRAND_TAGLINE}</p>
+              <p className="hero-description">
+                Начните с понятного учебного примера: неизвестная флешка, ошибки
+                при входе или необычное копирование файлов. Система объяснит, что
+                заметила, а человек примет решение.
+              </p>
+              <div className="hero-actions">
+                <Link className="btn btn-primary fr-btn-lg" to="/app">
+                  Открыть Supperapp <ArrowRight size={17} />
+                </Link>
+                <Link className="btn btn-outline fr-btn-lg" to="/app/commission">
+                  <Play size={16} /> Запустить демонстрацию
+                </Link>
+              </div>
+              <div className="hero-assurances">
+                <span>
+                  <Check size={14} /> Вымышленные учебные данные
+                </span>
+                <span>
+                  <LockKeyhole size={14} /> Защищённый доступ
+                </span>
+                <span>
+                  <ShieldCheck size={14} /> Личный доступ участников
+                </span>
+              </div>
+              <div className="landing-team-entry">
+                <Link to="/app/team">
+                  <Users size={15} /> Чат участников
+                </Link>
+                <Link to="/app/help">
+                  <BookOpen size={15} /> Учебник по всем разделам
+                </Link>
+              </div>
             </div>
-            <div className="hero-assurances">
-              <span>
-                <Check size={14} /> Вымышленные учебные данные
-              </span>
-              <span>
-                <LockKeyhole size={14} /> Защищённый доступ
-              </span>
-              <span>
-                <ShieldCheck size={14} /> Личный доступ участников
-              </span>
-            </div>
+            <SignalPipeline />
           </div>
-          <div
-            className="hero-visual"
-            aria-label="Иллюстрация учебной обработки событий"
-          >
-            <div className="ultra-public-core-heading">
-              <b>AEGIS / ЯДРО ЗАЩИТЫ</b>
-              <span>АРХИТЕКТУРА ПЛАТФОРМЫ</span>
-            </div>
-            <div className="hero-emblem-stage">
-              <div className="identity-orbit" aria-hidden="true" />
-              <EmblemPair className="hero-identity-emblems" publicMode />
-              <span>Единое цифровое пространство защиты</span>
-            </div>
-            <div className="ultra-public-flow">
-              <div>
-                <Activity />
-                <b>Наблюдать</b>
-                <span>События и источники</span>
+          <dl className="fr-facts">
+            {facts.map((fact) => (
+              <div key={fact.label}>
+                <dt>{fact.label}</dt>
+                <dd>{fact.value}</dd>
               </div>
-              <div>
-                <Cpu />
-                <b>Понимать</b>
-                <span>Анализ и доказательства</span>
-              </div>
-              <div>
-                <ShieldCheck />
-                <b>Решать</b>
-                <span>Расследование и отчёт</span>
-              </div>
+            ))}
+          </dl>
+          <a className="hero-explore" href="#capabilities">
+            Изучить возможности <ArrowDown size={15} />
+          </a>
+        </section>
+
+        <section id="capabilities" className="landing-capabilities">
+          <div className="landing-section-heading">
+            <div>
+              <span className="landing-kicker">ЕДИНОЕ РАБОЧЕЕ ПРОСТРАНСТВО</span>
+              <h2>
+                Каждый инструмент —<br />
+                часть расследования.
+              </h2>
             </div>
-            <p className="ultra-public-note">
-              Концептуальная схема. Оперативные показатели доступны после входа.
+            <p>
+              Уже реализованные функции используют API и сохраняемые данные.
+              Нужные действия доступны после входа.
             </p>
+          </div>
+          <div className="capability-grid">
+            {capabilities.map(({ Icon, title, text, path }, i) => (
+              <Link key={path} className="capability-card" to={"/app/" + path}>
+                <div className="row between">
+                  <span className="fr-icon-tile">
+                    <Icon size={22} />
+                  </span>
+                  <small>0{i + 1}</small>
+                </div>
+                <h3>{title}</h3>
+                <p>{text}</p>
+                <span>
+                  Открыть раздел <ArrowRight size={15} />
+                </span>
+              </Link>
+            ))}
           </div>
         </section>
-        <OverviewShowcase publicMode />
+
         <section className="landing-preview" id="practice">
           <div className="landing-section-heading">
             <div>
@@ -275,9 +381,7 @@ export function Landing() {
             </aside>
             <div className="preview-detail" key={current.route}>
               <div className="row between">
-                <span className="preview-overline">
-                  ДЕМОНСТРАЦИОННЫЙ ИНЦИДЕНТ
-                </span>
+                <span className="preview-overline">ДЕМОНСТРАЦИОННЫЙ ИНЦИДЕНТ</span>
                 <span className="badge">Пример · не запись из базы</span>
               </div>
               <div className="preview-incident">
@@ -319,38 +423,7 @@ export function Landing() {
             </div>
           </div>
         </section>
-        <section id="capabilities" className="landing-capabilities">
-          <div className="landing-section-heading">
-            <div>
-              <span className="landing-kicker">
-                ЕДИНОЕ РАБОЧЕЕ ПРОСТРАНСТВО
-              </span>
-              <h2>
-                Каждый инструмент —<br />
-                часть расследования.
-              </h2>
-            </div>
-            <p>
-              Уже реализованные функции используют API и сохраняемые данные.
-              Нужные действия доступны после входа.
-            </p>
-          </div>
-          <div className="capability-grid">
-            {capabilities.map(({ Icon, title, text, path }, i) => (
-              <Link key={path} className="capability-card" to={"/app/" + path}>
-                <div className="row between">
-                  <Icon size={27} />
-                  <small>0{i + 1}</small>
-                </div>
-                <h3>{title}</h3>
-                <p>{text}</p>
-                <span>
-                  Открыть раздел <ArrowRight size={15} />
-                </span>
-              </Link>
-            ))}
-          </div>
-        </section>
+
         <section id="workflow" className="landing-flow">
           <div className="landing-section-heading">
             <div>
@@ -390,43 +463,103 @@ export function Landing() {
             </Link>
           </div>
         </section>
-        <section className="landing-integrations">
-          <div>
-            <Network size={29} />
-            <span className="landing-kicker">ИНТЕГРАЦИИ И РАЗВИТИЕ</span>
-            <h2>
-              Архитектура для
-              <br />
-              корпоративной среды.
-            </h2>
+
+        <section className="fr-value" aria-labelledby="fr-value-title">
+          <div className="landing-section-heading">
+            <div>
+              <span className="landing-kicker">ПРАКТИЧЕСКАЯ ПОЛЬЗА</span>
+              <h2 id="fr-value-title">
+                Одна система —<br />
+                три уровня пользы.
+              </h2>
+            </div>
             <p>
-              События из сторонних продуктов поступают в единый процесс: приём →
-              проверка → обнаружение → расследование. Создайте приёмник в центре
-              интеграций и настройте отправку через API или корпоративный агент.
-              Почтовый анализ и цифровой двойник уже доступны локально.
+              Supperapp сокращает путь от сигнала до решения и делает каждый шаг
+              проверяемым: для того, кто ведёт расследование, кто за него
+              отвечает и кто только учится.
             </p>
-            <Link className="btn btn-outline" to="/app/integrations">
-              Открыть центр интеграций <ArrowRight size={16} />
-            </Link>
           </div>
-          <div className="integration-list">
-            {[
-              ["REST API / OpenAPI", "Реализовано"],
-              ["WebSocket событий", "Реализовано"],
-              [
-                "Почтовая безопасность и цифровой двойник",
-                "Протестировано локально",
-              ],
-              ["Приём событий Kaspersky / DLP / Microsoft 365", "API-приёмник"],
-            ].map(([title, status]) => (
-              <div key={title}>
-                <span className="online-dot" />
-                <b>{title}</b>
-                <span>{status}</span>
-              </div>
+          <div className="fr-value-grid">
+            {benefits.map(({ Icon, audience, title, points }) => (
+              <article key={audience} className="fr-value-card fr-reveal">
+                <span className="fr-icon-tile">
+                  <Icon size={22} />
+                </span>
+                <small>{audience}</small>
+                <h3>{title}</h3>
+                <ul>
+                  {points.map((point) => (
+                    <li key={point}>
+                      <Check size={15} /> {point}
+                    </li>
+                  ))}
+                </ul>
+              </article>
             ))}
           </div>
         </section>
+
+        <OverviewShowcase publicMode />
+
+        <section id="reliability" className="fr-tech" aria-labelledby="fr-tech-title">
+          <div className="landing-section-heading">
+            <div>
+              <span className="landing-kicker">ТЕХНОЛОГИИ И НАДЁЖНОСТЬ</span>
+              <h2 id="fr-tech-title">
+                Инженерная основа,
+                <br />
+                которой можно доверять.
+              </h2>
+            </div>
+            <p>
+              Каждое утверждение ниже реализовано в исходном коде; ключевые
+              механизмы покрыты автотестами. Подробности — в документации проекта.
+            </p>
+          </div>
+          <div className="fr-tech-grid">
+            {reliability.map(({ Icon, title, text }) => (
+              <article key={title} className="fr-tech-card fr-reveal">
+                <Icon size={20} />
+                <h3>{title}</h3>
+                <p>{text}</p>
+              </article>
+            ))}
+          </div>
+          <div className="landing-integrations fr-reveal">
+            <div>
+              <Network size={26} />
+              <span className="landing-kicker">ИНТЕГРАЦИИ И РАЗВИТИЕ</span>
+              <h3>Архитектура для корпоративной среды</h3>
+              <p>
+                События из сторонних продуктов поступают в единый процесс: приём →
+                проверка → обнаружение → расследование. Создайте приёмник в центре
+                интеграций и настройте отправку через API или корпоративный агент.
+                Почтовый анализ и цифровой двойник уже доступны локально.
+              </p>
+              <Link className="btn btn-outline" to="/app/integrations">
+                <ServerCog size={16} /> Открыть центр интеграций
+              </Link>
+            </div>
+            <div className="integration-list">
+              {[
+                ["REST API / OpenAPI", "Реализовано"],
+                ["WebSocket событий", "Реализовано"],
+                [
+                  "Почтовая безопасность и цифровой двойник",
+                  "Протестировано локально",
+                ],
+                ["Приём событий Kaspersky / DLP / Microsoft 365", "API-приёмник"],
+              ].map(([title, status]) => (
+                <div key={title}>
+                  <span className="online-dot" />
+                  <b>{title}</b>
+                  <span>{status}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <section className="landing-cta">
           <span className="landing-kicker">ОТ ЗНАКОМСТВА — К ПРАКТИКЕ</span>
           <h2>
@@ -438,9 +571,14 @@ export function Landing() {
             Пошаговая демонстрация: ситуация → события → инцидент →
             расследование → отчёт.
           </p>
-          <Link className="btn btn-primary" to="/app/commission">
-            <Play size={17} /> Запустить демонстрацию <ArrowRight size={17} />
-          </Link>
+          <div className="row wrap fr-cta-actions">
+            <Link className="btn btn-primary fr-btn-lg" to="/app/commission">
+              <Play size={17} /> Запустить демонстрацию <ArrowRight size={17} />
+            </Link>
+            <Link className="btn btn-outline fr-btn-lg" to="/app/scenarios">
+              <FlaskConical size={17} /> Открыть полигон
+            </Link>
+          </div>
           <small>Для запуска потребуется ваша учебная учётная запись.</small>
         </section>
         <ModuleCatalog />
@@ -457,9 +595,9 @@ export function Landing() {
               официального одобрения государственного органа. Реальные служебные
               системы не подключены.
             </p>
-            <a className="btn btn-outline" href="/app/help">
+            <Link className="btn btn-outline" to="/app/help">
               Инструкция нового сотрудника <ArrowRight size={16} />
-            </a>
+            </Link>
           </div>
           <div className="about-branding">
             <EmblemPair className="about-emblems" publicMode />
@@ -470,8 +608,7 @@ export function Landing() {
       </main>
       <footer className="landing-footer">
         <span>
-          <EmblemPair className="footer-emblems" publicMode /> AegisBorder
-          Supperapp
+          <EmblemPair className="footer-emblems" publicMode /> {BRAND_NAME}
         </span>
         <p>
           Демонстрационный проект. Синтетические данные. Не является официальным

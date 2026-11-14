@@ -1,0 +1,174 @@
+/* Дизайн-токены AegisBorder «Цифровой рубеж».
+ * Единственный источник цветов, типографики, отступов, радиусов, теней и движения.
+ * Прежние переменные (--ultra-*, --sa-*, --surface, --muted, --line) сопоставлены с токенами
+ * в конце файла: старые экраны получают новую палитру без правки каждого компонента.
+ * Описание системы: DESIGN_SYSTEM.md.
+ */
+
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Нейтральная шкала: глубокий «ночной» синий, ступени поверхностей отличаются на ~4% светлоты. */
+  --ab-bg: #070d18;
+  --ab-bg-raised: #0a1220;
+  --ab-surface-1: #0e1828;
+  --ab-surface-2: #132034;
+  --ab-surface-3: #192a41;
+  --ab-overlay: rgb(7 13 24 / 0.72);
+  --ab-glass: rgb(19 32 52 / 0.62);
+
+  --ab-border: rgb(148 178 214 / 0.13);
+  --ab-border-strong: rgb(148 178 214 / 0.24);
+
+  --ab-text: #eef4fb;
+  --ab-text-2: #b3c2d4;
+  --ab-text-3: #8296ae; /* ≥ 4.5:1 на --ab-surface-1 */
+
+  /* Акценты: «небо степи» (циан) — действие и фокус; «золото» — официальный, редкий акцент. */
+  --ab-accent: #34c3d3;
+  --ab-accent-strong: #5fd6e2;
+  --ab-accent-ink: #04212a;
+  --ab-accent-soft: rgb(52 195 211 / 0.12);
+  --ab-accent-line: rgb(52 195 211 / 0.38);
+  --ab-gold: #d6b26e;
+  --ab-gold-soft: rgb(214 178 110 / 0.12);
+
+  /* Семантика состояний. */
+  --ab-success: #43c59a;
+  --ab-success-soft: rgb(67 197 154 / 0.13);
+  --ab-warning: #e9b85a;
+  --ab-warning-soft: rgb(233 184 90 / 0.13);
+  --ab-danger: #f2717f;
+  --ab-danger-soft: rgb(242 113 127 / 0.13);
+  --ab-info: #7aa7ff;
+  --ab-info-soft: rgb(122 167 255 / 0.13);
+
+  /* Типографика: системные шрифты — без загрузки из сети, работает в закрытом контуре. */
+  --ab-font: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --ab-font-display: "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --ab-font-mono: "Cascadia Mono", "Cascadia Code", Consolas, "SF Mono", ui-monospace, monospace;
+
+  --ab-text-xs: 12px;
+  --ab-text-sm: 13px;
+  --ab-text-md: 14px;
+  --ab-text-base: 15px;
+  --ab-text-lg: 17px;
+  --ab-text-xl: 20px;
+  --ab-text-2xl: 26px;
+  --ab-text-3xl: 34px;
+  --ab-text-display: clamp(44px, 5.6vw, 84px);
+
+  --ab-leading-tight: 1.15;
+  --ab-leading: 1.55;
+  --ab-tracking-caps: 0.14em;
+
+  /* Отступы: шаг 4 px. */
+  --ab-space-1: 4px;
+  --ab-space-2: 8px;
+  --ab-space-3: 12px;
+  --ab-space-4: 16px;
+  --ab-space-5: 20px;
+  --ab-space-6: 24px;
+  --ab-space-8: 32px;
+  --ab-space-10: 40px;
+  --ab-space-12: 48px;
+  --ab-space-16: 64px;
+  --ab-space-24: 96px;
+
+  --ab-radius-xs: 6px;
+  --ab-radius-sm: 8px;
+  --ab-radius: 12px;
+  --ab-radius-lg: 16px;
+  --ab-radius-xl: 22px;
+  --ab-radius-pill: 999px;
+
+  --ab-shadow-1: 0 1px 2px rgb(0 0 0 / 0.28);
+  --ab-shadow-2: 0 8px 24px -8px rgb(0 0 0 / 0.5);
+  --ab-shadow-3: 0 24px 64px -16px rgb(0 0 0 / 0.6);
+  --ab-ring: 0 0 0 3px rgb(52 195 211 / 0.35);
+  --ab-highlight: inset 0 1px 0 rgb(255 255 255 / 0.04);
+
+  /* Движение: короткие кривые «ease-out» для отклика, длинные — только для сцен главной. */
+  --ab-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ab-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ab-dur-fast: 120ms;
+  --ab-dur: 200ms;
+  --ab-dur-slow: 420ms;
+
+  --ab-sidebar-w: 264px;
+  --ab-header-h: 64px;
+  --ab-content-max: 1440px;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --ab-bg: #f3f6fa;
+  --ab-bg-raised: #f8fafc;
+  --ab-surface-1: #ffffff;
+  --ab-surface-2: #f4f7fb;
+  --ab-surface-3: #e9eef5;
+  --ab-overlay: rgb(15 27 45 / 0.45);
+  --ab-glass: rgb(255 255 255 / 0.78);
+
+  --ab-border: rgb(16 36 59 / 0.11);
+  --ab-border-strong: rgb(16 36 59 / 0.2);
+
+  --ab-text: #0d1d31;
+  --ab-text-2: #3c5068;
+  --ab-text-3: #5a6e86;
+
+  --ab-accent: #00798c;
+  --ab-accent-strong: #005f6e;
+  --ab-accent-ink: #ffffff;
+  --ab-accent-soft: rgb(0 121 140 / 0.09);
+  --ab-accent-line: rgb(0 121 140 / 0.35);
+  --ab-gold: #8a6420;
+  --ab-gold-soft: rgb(138 100 32 / 0.1);
+
+  --ab-success: #00805f;
+  --ab-success-soft: rgb(0 128 95 / 0.1);
+  --ab-warning: #8f5d00;
+  --ab-warning-soft: rgb(143 93 0 / 0.1);
+  --ab-danger: #c0263f;
+  --ab-danger-soft: rgb(192 38 63 / 0.09);
+  --ab-info: #2856c7;
+  --ab-info-soft: rgb(40 86 199 / 0.09);
+
+  --ab-shadow-1: 0 1px 2px rgb(16 36 59 / 0.08);
+  --ab-shadow-2: 0 8px 24px -10px rgb(16 36 59 / 0.18);
+  --ab-shadow-3: 0 24px 60px -20px rgb(16 36 59 / 0.25);
+  --ab-ring: 0 0 0 3px rgb(0 121 140 / 0.28);
+  --ab-highlight: inset 0 1px 0 rgb(255 255 255 / 0.7);
+}
+
+/* Совместимость: прежние имена переменных указывают на новые токены. */
+:root,
+:root[data-theme="dark"],
+:root[data-theme="light"] {
+  --ultra-bg: var(--ab-bg);
+  --ultra-secondary: var(--ab-surface-1);
+  --surface: var(--ab-surface-1);
+  --ultra-elevated: var(--ab-surface-2);
+  --brand-gold: var(--ab-gold);
+  --ultra-cyan: var(--ab-accent);
+  --ultra-violet: var(--ab-gold);
+  --ultra-success: var(--ab-success);
+  --ultra-warning: var(--ab-warning);
+  --ultra-critical: var(--ab-danger);
+  --ultra-text: var(--ab-text);
+  --muted: var(--ab-text-2);
+  --line: var(--ab-border);
+  --ultra-radius-sm: var(--ab-radius-xs);
+  --ultra-radius: var(--ab-radius);
+  --ultra-radius-lg: var(--ab-radius-lg);
+  --ultra-shadow: var(--ab-shadow-2);
+  --ultra-duration: var(--ab-dur);
+  --sa-bg: var(--ab-bg);
+  --sa-surface: var(--ab-surface-1);
+  --sa-raised: var(--ab-surface-2);
+  --sa-text: var(--ab-text);
+  --sa-muted: var(--ab-text-2);
+  --sa-border: var(--ab-border);
+  --sa-accent: var(--ab-accent);
+}

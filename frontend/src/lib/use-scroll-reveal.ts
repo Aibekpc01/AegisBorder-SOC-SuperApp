@@ -15,7 +15,7 @@ export function useScrollReveal<T extends HTMLElement>() {
         }
       });
     }, { threshold: 0.08 });
-    const items = root.querySelectorAll('.landing-section-heading, .capability-card, .preview-console, .catalog-grid article');
+    const items = root.querySelectorAll('.landing-section-heading, .capability-card, .preview-console, .catalog-grid article, .fr-reveal');
     const reset = () => items.forEach((item) => item.classList.remove('reveal-pending'));
     if (!preference.matches) items.forEach((item) => {
       if (item.getBoundingClientRect().top > window.innerHeight) {

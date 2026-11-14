@@ -2,7 +2,7 @@
  * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
  */
 
-import borderService from "../assets/border-service.png";
+import borderService from "../assets/border-service.webp";
 import knb from "../assets/knb.svg";
 export const publicEmblemsEnabled =
   import.meta.env.VITE_PUBLIC_OFFICIAL_EMBLEMS !== "false";

@@ -24,7 +24,7 @@ export default ts.config(
   { files: ["*.js"], languageOptions: { globals: globals.node } },
   {
     // Playwright scripts run in Node and evaluate callbacks in the browser.
-    files: ["scripts/emblems-r15-check.mjs", "scripts/site-audit-*.mjs"],
+    files: ["scripts/emblems-r15-check.mjs", "scripts/site-audit-*.mjs", "scripts/review-*.mjs"],
     languageOptions: { globals: { ...globals.node, ...globals.browser } },
   },
   {

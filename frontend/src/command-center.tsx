@@ -36,9 +36,6 @@ import { Button } from "./components/ui/button";
 import { Dialog } from "./components/ui/dialog";
 import { api, type Row } from "./api";
 import { date, roles, statuses, nextStatus, riskLabel } from "./lib/utils";
-import "./style.css";
-import "./redesign.css";
-import "./profiles.css";
 import { BlockGuide } from "./components/block-guide";
 import {
   ProfileEditor,
@@ -60,7 +57,6 @@ import { ModuleMenu } from "./components/module-menu";
 import { InvestigationGraph } from "./components/investigation-graph";
 import { PagePrimer, PlainLanguageHelp } from "./components/beginner-help";
 import { explainers } from "./lib/explainers";
-import "./superapp.css";
 import { UltraDashboard } from "./components/ultra-dashboard";
 import { UltraIncidents } from "./components/ultra-incidents";
 import { BRAND_NAME, BRAND_TAGLINE } from "./lib/brand";
@@ -69,7 +65,6 @@ import {
   DigitalCore,
   PresentationMode,
 } from "./components/ultra-visuals";
-import "./ultra.css";
 import {
   PresenceSignal,
   Participants,

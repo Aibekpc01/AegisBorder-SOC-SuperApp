@@ -18,6 +18,9 @@ import "./ultra.css";
 import "./corporate-identity.css";
 import "./design-polish.css";
 import "./presentation-accessibility.css";
+// Дизайн-система подключается последней: токены и общий слой приводят все экраны к единому виду.
+import "./styles/tokens.css";
+import "./styles/system.css";
 import { SiteAssistant } from "./components/site-assistant";
 import { EntryCheck } from "./components/entry-check";
 // Рабочую оболочку загружаем по необходимости, чтобы главная не ждала весь код внутренних экранов.

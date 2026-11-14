@@ -21,8 +21,8 @@ import { api } from "../api";
 import { date, publicationDate } from "../lib/utils";
 import { BRAND_NAME } from "../lib/brand";
 import { Dialog } from "./ui/dialog";
-import operator from "../assets/story/operator.png";
-import hacker from "../assets/story/hacker.png";
+import operator from "../assets/story/operator.webp";
+import hacker from "../assets/story/hacker.webp";
 import "../supper-experience.css";
 
 type Slide = {

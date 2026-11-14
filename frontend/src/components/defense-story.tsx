@@ -15,8 +15,8 @@ import {
 } from "lucide-react";
 import { defenseModules, defensePhases } from "../lib/defense-story";
 import { Emblem, publicEmblemsEnabled } from "./emblems";
-import hacker from "../assets/story/hacker.png";
-import operator from "../assets/story/operator.png";
+import hacker from "../assets/story/hacker.webp";
+import operator from "../assets/story/operator.webp";
 import "../defense-story.css";
 
 export function DefenseStory({ publicMode = false }: { publicMode?: boolean }) {
