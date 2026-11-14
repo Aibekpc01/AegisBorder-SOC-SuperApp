@@ -364,3 +364,67 @@ def quick_scan(device_id: str, user=Depends(technician), db=Depends(get_db)):
     audit(db, user.id, f"Aegis DLP: запрошена быстрая проверка {device_id}")
     db.commit()
     return command
+
+
+# ---------- Требование DLP для отдельных пользователей ----------
+# По умолчанию DLP не нужен никому: смотреть и работать могут все роли.
+# Администратор (создатель, CTO, администратор) включает требование конкретному сотруднику —
+# тогда рабочие API этого сотрудника отвечают 428, пока не подключён агент Aegis DLP.
+
+class RequirementInput(BaseModel):
+    required: bool
+
+
+def require_admin(user=Depends(current)):
+    if not is_admin(user):
+        raise HTTPException(403, "Требование DLP назначает администратор")
+    return user
+
+
+@router.get("/requirements")
+def requirements(actor=Depends(require_admin), db=Depends(get_db)):
+    assigned = {
+        int(row.key.split(":", 1)[1]): row.value
+        for row in db.scalars(select(Setting).where(Setting.key.like("dlp-required:%")))
+    }
+    users = db.scalars(select(User).where(User.active.is_(True)).order_by(User.username)).all()
+    actor_rank = role_info(actor.role, db)["rank"]
+    return [
+        {
+            "id": u.id,
+            "username": u.username,
+            "role": u.role,
+            "role_label": role_info(u.role, db)["label"],
+            "required": bool(assigned.get(u.id, {}).get("required")),
+            # Требование действует только для ролей, которым доступен агент DLP.
+            "supported": dlp_allowed(u, db),
+            # Нельзя менять себя и тех, кто выше по рангу.
+            "editable": u.id != actor.id and role_info(u.role, db)["rank"] <= actor_rank,
+        }
+        for u in users
+        if u.role not in ("demo", "demo_viewer")
+    ]
+
+
+@router.put("/requirements/{user_id}")
+def set_requirement(user_id: int, data: RequirementInput, actor=Depends(require_admin), db=Depends(get_db)):
+    target = db.get(User, user_id)
+    if not target or not target.active:
+        raise HTTPException(404, "Пользователь не найден")
+    require_target(actor, target, db)
+    key = f"dlp-required:{target.id}"
+    row = db.get(Setting, key)
+    if data.required:
+        if not dlp_allowed(target, db):
+            raise HTTPException(422, "Агент DLP доступен ролям «Разработчик» и выше; сначала измените роль")
+        value = {"required": True, "assigned_by": actor.id, "created": utcnow().timestamp()}
+        if row:
+            row.value = value
+        else:
+            db.add(Setting(key=key, value=value))
+        audit(db, actor.id, f"Aegis DLP: сотруднику #{target.id} включено обязательное подключение")
+    elif row:
+        db.delete(row)
+        audit(db, actor.id, f"Aegis DLP: сотруднику #{target.id} снято обязательное подключение")
+    db.commit()
+    return {"id": target.id, "required": data.required}

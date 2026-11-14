@@ -286,7 +286,9 @@ export default function App() {
     refetchInterval: 5000,
     retry: false,
   });
-  const workAllowed = !!user && dlpAccess.data?.compliant === true;
+  // DLP по умолчанию не требуется: интерфейс открыт сразу, а для пользователей с назначенным
+  // требованием сервер отвечает 428 — тогда проверка обновится и покажется экран подключения агента.
+  const workAllowed = !!user && dlpAccess.data?.compliant !== false;
   useEffect(() => {
     const required = () => {
       void client.invalidateQueries({ queryKey: ["dlp-access"] });
@@ -629,20 +631,6 @@ export default function App() {
             Вернуться на главную страницу
           </NavLink>
         </form>
-      </div>
-    );
-  if (!dlpAccess.data)
-    return (
-      <div className="login">
-        <h1>Aegis DLP</h1>
-        <p>
-          {dlpAccess.error
-            ? dlpAccess.error.message
-            : "Проверяем требования защиты устройства"}
-        </p>
-        <button className="btn btn-primary" onClick={() => dlpAccess.refetch()}>
-          Повторить проверку
-        </button>
       </div>
     );
   if (!workAllowed)

@@ -12,10 +12,12 @@ import {
   Layers,
   Trash2,
   Activity,
+  LockKeyhole,
 } from "lucide-react";
 import { api, type Row } from "../api";
 import { date } from "../lib/utils";
 import { UsersWorkspace } from "./user-profiles";
+import { DlpRequirements } from "./dlp-requirements";
 import { Dialog } from "./ui/dialog";
 import "../governance.css";
 
@@ -49,6 +51,8 @@ export function AccessConsole({
       <nav className="access-tabs" aria-label="Управление командой">
         {[
           ["users", "Пользователи", Users],
+          // Требование DLP назначают только администраторы (создатель, CTO, администратор).
+          ...(currentUser.permissions?.system_admin ? [["dlp", "Доступ через DLP", LockKeyhole]] : []),
           ["roles", "Роли и полномочия", Layers],
           ["cto", "Кабинет CTO", Activity],
         ].map(([key, label, Icon]) => (
@@ -70,6 +74,7 @@ export function AccessConsole({
           creator={currentUser.role === "creator"}
         />
       )}{" "}
+      {tab === "dlp" && currentUser.permissions?.system_admin && <DlpRequirements />}
       {tab === "cto" && <CTODashboard />}
     </section>
   );
