@@ -21,15 +21,23 @@ import "./presentation-accessibility.css";
 // Дизайн-система подключается последней: токены и общий слой приводят все экраны к единому виду.
 import "./styles/tokens.css";
 import "./styles/system.css";
-import { SiteAssistant } from "./components/site-assistant";
 import { EntryCheck } from "./components/entry-check";
 // Рабочую оболочку загружаем по необходимости, чтобы главная не ждала весь код внутренних экранов.
-const CommandCenter = lazy(() => import("./command-center"));
+const loadCommandCenter = () => import("./command-center");
+const loadLanding = () => import("./components/landing");
+const CommandCenter = lazy(loadCommandCenter);
 const Landing = lazy(() =>
-  import("./components/landing").then((module) => ({
-    default: module.Landing,
+  loadLanding().then((module) => ({ default: module.Landing })),
+);
+// Помощник по сайту — вспомогательный виджет: грузится отдельно и не задерживает первый экран.
+const SiteAssistant = lazy(() =>
+  import("./components/site-assistant").then((module) => ({
+    default: module.SiteAssistant,
   })),
 );
+// Код нужной страницы начинает загружаться параллельно с проверкой готовности (EntryCheck),
+// а не после неё: браузер кэширует модуль, и lazy() получит его мгновенно.
+void (window.location.pathname === "/" ? loadLanding() : loadCommandCenter());
 const client = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
 });
@@ -51,7 +59,9 @@ function SiteEntry() {
       }
     >
       {location.pathname === "/" ? <Landing /> : <CommandCenter />}
-      <SiteAssistant />
+      <Suspense fallback={null}>
+        <SiteAssistant />
+      </Suspense>
     </Suspense>
   );
 }

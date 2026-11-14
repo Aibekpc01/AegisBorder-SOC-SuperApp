@@ -774,6 +774,26 @@ pre {
   border-color: var(--ab-danger);
 }
 
+/* Поле внутри обёртки поиска не рисует собственную рамку: рамка у обёртки. */
+.shell .workspace main .search-field {
+  min-height: 40px;
+  border: 1px solid var(--ab-border-strong);
+  border-radius: var(--ab-radius-sm);
+  background: var(--ab-bg-raised);
+  color: var(--ab-text-3);
+}
+.shell .workspace main .search-field input,
+.shell .workspace main .search-field input:hover,
+.shell .workspace main .search-field input:focus {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.shell .workspace main .search-field:focus-within {
+  border-color: var(--ab-accent);
+  box-shadow: var(--ab-ring);
+}
+
 /* ---------- Таблицы ---------- */
 .shell .workspace main table {
   width: 100%;
@@ -1017,7 +1037,9 @@ pre {
 
 /* ---------- Планшет: узкая панель из иконок (761–1000 px) ---------- */
 @media (max-width: 1000px) {
-  :root {
+  /* [data-theme] нужен, чтобы перекрыть специфичность :root[data-theme="dark"] из tokens.css. */
+  :root,
+  :root[data-theme] {
     --ab-sidebar-w: 72px;
   }
   .shell > aside {
@@ -1061,11 +1083,21 @@ pre {
   .shell .workspace > main {
     padding: var(--ab-space-5) var(--ab-space-5) var(--ab-space-16);
   }
+  .shell .workspace main .page-heading,
+  .page-heading {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--ab-space-4);
+  }
+  .shell .workspace main .page-heading > .row {
+    justify-content: flex-start;
+  }
 }
 
 /* ---------- Телефон: выезжающая панель (≤ 760 px) ---------- */
 @media (max-width: 760px) {
-  :root {
+  :root,
+  :root[data-theme] {
     --ab-sidebar-w: 0px;
   }
   .shell > aside {
@@ -1124,6 +1156,9 @@ pre {
     color: var(--ab-text);
     box-shadow: none;
   }
+  .shell.ultra-nav-open .ultra-mobile-nav {
+    left: calc(min(86vw, 300px) + 12px);
+  }
   .shell .workspace > header,
   .workspace > header {
     height: 64px;
@@ -1144,6 +1179,13 @@ pre {
   }
   .shell .workspace > header :is(.mode, .plain-help-trigger, .theme-toggle) {
     display: none;
+  }
+  .shell .workspace > header .profile-trigger {
+    width: 36px;
+    padding: 0;
+  }
+  .shell .workspace > header .profile-trigger > .person-avatar {
+    display: grid;
   }
   .shell .workspace main,
   .shell .workspace > main {

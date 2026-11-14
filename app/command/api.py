@@ -30,6 +30,7 @@ from sqlalchemy.exc import IntegrityError
 from .analytics import run_model
 from .db import SessionLocal, engine, get_db
 from .detection import analyze, ingest
+from .headers import StaticCompression, security_headers
 from .models import (
     Alert,
     Asset,
@@ -159,6 +160,7 @@ async def lifespan(app):
 
 
 app = FastAPI(title="AegisBorder Supperapp — расследование киберинцидентов и защита информации", version=VERSION, lifespan=lifespan)
+app.add_middleware(StaticCompression)
 app.include_router(profile_router)
 app.include_router(workspace_router)
 app.include_router(superapp_router)
@@ -204,11 +206,8 @@ async def guard(request, call_next):
         if origin and origin not in allowed:
             return JSONResponse({"detail": "Источник запроса не разрешён"}, status_code=403)
     response = await call_next(request)
-    response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["X-Frame-Options"] = "DENY"
-    response.headers["Referrer-Policy"] = "same-origin"
-    if request.url.path.startswith("/api"):
-        response.headers["Cache-Control"] = "no-store"
+    https = request.url.scheme == "https" or public_origin().startswith("https://")
+    response.headers.update(security_headers(request.url.path, https))
     return response
 
 

@@ -204,7 +204,7 @@ export function ExperienceSlides({
         </div>
         <div className="supper-slide-art" aria-hidden="true">
           {slide.image ? (
-            <img src={slide.image} alt="" />
+            <img src={slide.image} alt="" loading="lazy" decoding="async" width={680} height={1020} />
           ) : (
             <div className="supper-orbit">
               <span />
