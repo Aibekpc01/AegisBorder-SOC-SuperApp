@@ -53,7 +53,7 @@ function pageBlocks(page: string): Block[] {
     "Назначение страницы",
     guide?.description || siteTour[0].text,
     guide?.steps.join("\n") ||
-      "Нажмите «Открыть Supperapp», чтобы перейти к рабочей панели.",
+      "Нажмите «Открыть SuperApp», чтобы перейти к рабочей панели.",
   );
   add(
     document.querySelector(".first-visit"),

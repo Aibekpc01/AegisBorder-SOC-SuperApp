@@ -114,10 +114,10 @@ const pages = [
   ["commission", "Демонстрация проекта", Presentation],
   ["team", "Чат", Users],
   ["participants", "Сотрудники", Users],
-  ["development", "Развитие Supperapp", Layers],
+  ["development", "Развитие SuperApp", Layers],
   ["assistant", "Aegis AI", BrainCircuit],
   ["mail", "Почтовая безопасность", ShieldAlert],
-  ["m365", "Microsoft 365 Monitor", Monitor],
+  ["m365", "Безопасность Office 365", Monitor],
   ["twin", "Цифровой двойник", Layers],
   ["tasks", "Задачи и согласования", FileText],
   ["integrations", "Центр интеграций", Layers],
@@ -525,7 +525,7 @@ export default function App() {
         <div className="login-art">
           <EmblemPair className="login-emblems" />
           <h1>
-            AegisBorder <span>Supperapp</span>
+            AegisBorder <span>SuperApp</span>
           </h1>
           <p>{BRAND_TAGLINE}</p>
           <div className="badge">
@@ -549,7 +549,7 @@ export default function App() {
           }}
         >
           <span className="eyebrow">
-            AegisBorder Supperapp / ЗАЩИЩЁННЫЙ ДОСТУП
+            AegisBorder SuperApp / ЗАЩИЩЁННЫЙ ДОСТУП
           </span>
           <h2>Добро пожаловать</h2>
           <p>Войдите, чтобы открыть центр управления.</p>
@@ -689,7 +689,7 @@ export default function App() {
             <Emblem kind="border" />
           </div>
           <div>
-            AegisBorder <strong>Supperapp</strong>
+            AegisBorder <strong>SuperApp</strong>
             <small className="brand-mission">{BRAND_TAGLINE}</small>
           </div>
         </NavLink>
@@ -780,7 +780,7 @@ export default function App() {
       <div className="workspace">
         <header>
           <div className="breadcrumbs">
-            AegisBorder Supperapp <ChevronRight size={14} /> <b>{title}</b>
+            AegisBorder SuperApp <ChevronRight size={14} /> <b>{title}</b>
           </div>
           <div className="row">
             <AppTools
@@ -854,7 +854,7 @@ export default function App() {
           <div className="page-heading">
             <div>
               <span className="eyebrow">
-                AegisBorder Supperapp / ЦЕНТР КИБЕРЗАЩИТЫ
+                AegisBorder SuperApp / ЦЕНТР КИБЕРЗАЩИТЫ
               </span>
               <h1>{title}</h1>
               {page === "commission" && (

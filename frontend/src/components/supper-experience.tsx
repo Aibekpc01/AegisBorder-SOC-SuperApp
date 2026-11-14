@@ -61,7 +61,7 @@ const journey: Slide[] = [
     image: operator,
   },
   {
-    label: "03 / SUPPERAPP · РЕАЛИЗОВАНО",
+    label: "03 / SUPERAPP · РЕАЛИЗОВАНО",
     title: "Команда работает в одном пространстве",
     text: "Документы, задачи, обучение и чат объединены вокруг расследования. Приложение показывает подключения к сайту и присутствие сотрудников.",
     points: [
@@ -934,7 +934,7 @@ export function DashboardWelcome() {
       <div className="supper-hero-core" aria-hidden="true">
         <span />
         <ShieldCheck size={96} />
-        <small>AEGISBORDER / SUPPERAPP</small>
+        <small>AEGISBORDER / SUPERAPP</small>
       </div>
     </section>
   );

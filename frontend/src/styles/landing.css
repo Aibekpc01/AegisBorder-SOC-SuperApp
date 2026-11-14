@@ -918,6 +918,25 @@
   color: var(--ab-accent);
 }
 
+/* Группы примеров и компактные кнопки — список из 9 ситуаций помещается рядом с карточкой. */
+.super-landing.fr-landing .preview-group {
+  margin: var(--ab-space-3) 0 2px var(--ab-space-3);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ab-gold);
+}
+.super-landing.fr-landing .preview-console aside button {
+  padding: var(--ab-space-2) var(--ab-space-3);
+}
+.super-landing.fr-landing .preview-console aside button small {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 /* Порядок работы. */
 .super-landing.fr-landing .flow-steps {
   display: grid;
@@ -1349,6 +1368,21 @@
   .super-landing.fr-landing .preview-detail {
     padding: var(--ab-space-5);
   }
+  /* На телефоне примеры — горизонтальная лента: прокрутка внутри блока, а не всей страницы. */
+  .super-landing.fr-landing .preview-console aside {
+    flex-direction: row;
+    align-items: stretch;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding: var(--ab-space-3);
+  }
+  .super-landing.fr-landing .preview-console aside > :is(.preview-overline, .preview-group, p) {
+    display: none;
+  }
+  .super-landing.fr-landing .preview-console aside button {
+    flex: 0 0 78%;
+    scroll-snap-align: start;
+  }
   .super-landing.fr-landing .flow-description {
     grid-template-columns: 1fr;
   }
@@ -1375,5 +1409,327 @@
   .fr-step-icon {
     border-color: var(--ab-accent-line);
     color: var(--ab-accent);
+  }
+}
+
+/* ---------- Схема подразделений (components/landing/org-workflow.tsx) ---------- */
+.org-flow {
+  display: grid;
+  grid-template-columns: minmax(0, 1.75fr) minmax(300px, 1fr);
+  gap: var(--ab-space-4);
+  padding: var(--ab-space-5);
+  border: 1px solid var(--ab-border-strong);
+  border-radius: var(--ab-radius-xl);
+  background:
+    radial-gradient(600px 300px at 30% 0%, color-mix(in srgb, var(--ab-accent) 8%, transparent), transparent 70%),
+    var(--ab-surface-1);
+  box-shadow: var(--ab-shadow-3), var(--ab-highlight);
+}
+.org-stage {
+  position: relative;
+  min-height: 400px;
+  border-radius: var(--ab-radius-lg);
+  background-image:
+    linear-gradient(var(--ab-border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--ab-border) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: center;
+}
+.org-links {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.org-links path {
+  fill: none;
+  stroke: var(--ab-border-strong);
+  stroke-width: 1.5;
+  transition: stroke var(--ab-dur-slow) var(--ab-ease);
+}
+.org-links path.is-active {
+  stroke: var(--ab-accent);
+  stroke-dasharray: 6 6;
+  animation: org-flow 0.9s linear infinite;
+  filter: drop-shadow(0 0 4px var(--ab-accent));
+}
+@keyframes org-flow {
+  to {
+    stroke-dashoffset: -12;
+  }
+}
+.org-node {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--ab-space-2);
+  width: 22%;
+  min-height: 60px;
+  padding: var(--ab-space-2) var(--ab-space-3);
+  left: var(--x);
+  top: var(--y);
+  transform: translate(-50%, -50%);
+  border: 1px solid var(--ab-border-strong);
+  border-radius: var(--ab-radius);
+  background: var(--ab-bg-raised);
+  color: var(--ab-text);
+  text-align: left;
+  box-shadow: var(--ab-shadow-1);
+  transition:
+    border-color var(--ab-dur) var(--ab-ease),
+    box-shadow var(--ab-dur) var(--ab-ease),
+    background var(--ab-dur) var(--ab-ease),
+    transform var(--ab-dur) var(--ab-ease);
+  animation: org-in 600ms var(--d, 0ms) var(--ab-ease) backwards;
+}
+.org-node.org-l1,
+.org-node.org-l2 {
+  width: 36%;
+}
+@keyframes org-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 10px));
+  }
+}
+.org-node:hover {
+  border-color: var(--ab-accent-line);
+  transform: translate(-50%, calc(-50% - 2px));
+}
+.org-node.is-selected {
+  border-color: var(--ab-accent-line);
+  background: var(--ab-surface-2);
+}
+.org-node.is-current {
+  border-color: var(--ab-accent);
+  box-shadow: 0 0 0 4px var(--ab-accent-soft), var(--ab-shadow-2);
+}
+.org-node-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--ab-radius-sm);
+  background: var(--ab-accent-soft);
+  color: var(--ab-accent);
+}
+.org-node.org-l1 .org-node-icon {
+  background: var(--ab-gold-soft);
+  color: var(--ab-gold);
+}
+.org-node-text {
+  display: grid;
+  min-width: 0;
+}
+.org-node-text small {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ab-text-3);
+}
+.org-node-text b {
+  font-size: var(--ab-text-sm);
+  font-weight: 600;
+  line-height: 1.3;
+}
+.org-packet {
+  position: absolute;
+  z-index: 2;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 50%;
+  background: var(--ab-accent-strong);
+  box-shadow: 0 0 0 4px var(--ab-accent-soft), 0 0 16px var(--ab-accent);
+  transition:
+    left 320ms linear,
+    top 320ms linear;
+  pointer-events: none;
+}
+.org-side {
+  display: grid;
+  gap: var(--ab-space-3);
+  align-content: start;
+}
+.org-ticket,
+.org-info {
+  padding: var(--ab-space-4);
+  border: 1px solid var(--ab-border);
+  border-radius: var(--ab-radius-lg);
+  background: var(--ab-bg-raised);
+}
+.org-tag {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ab-gold);
+}
+.org-status {
+  padding: 3px 9px;
+  border-radius: var(--ab-radius-pill);
+  background: var(--ab-info-soft);
+  color: var(--ab-info);
+  font-size: var(--ab-text-xs);
+  font-weight: 600;
+}
+.org-status.is-done {
+  background: var(--ab-success-soft);
+  color: var(--ab-success);
+}
+.super-landing.fr-landing .org-flow h3 {
+  margin: var(--ab-space-2) 0 var(--ab-space-3);
+  font-size: var(--ab-text-base);
+  font-weight: 650;
+}
+.org-steps {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 var(--ab-space-3);
+  padding: 0;
+  list-style: none;
+}
+.org-steps li {
+  display: flex;
+  align-items: center;
+  gap: var(--ab-space-2);
+  font-size: var(--ab-text-sm);
+  color: var(--ab-text-3);
+  transition: color var(--ab-dur) var(--ab-ease);
+}
+.org-steps li span {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--ab-border-strong);
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+}
+.org-steps li.is-past {
+  color: var(--ab-text-2);
+}
+.org-steps li.is-past span {
+  border-color: var(--ab-success);
+  color: var(--ab-success);
+}
+.org-steps li.is-now {
+  color: var(--ab-text);
+  font-weight: 600;
+}
+.org-steps li.is-now span {
+  border-color: var(--ab-accent);
+  background: var(--ab-accent);
+  color: var(--ab-accent-ink);
+}
+.super-landing.fr-landing .org-note {
+  min-height: 3.2em;
+  margin: 0 0 var(--ab-space-3);
+  font-size: var(--ab-text-sm);
+  line-height: 1.55;
+}
+.org-controls {
+  display: flex;
+  gap: var(--ab-space-2);
+}
+.org-controls .btn:first-child {
+  flex: 1;
+}
+.org-info dl {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+}
+.org-info dt {
+  margin-top: var(--ab-space-2);
+  font-size: var(--ab-text-xs);
+  font-weight: 600;
+  color: var(--ab-text-3);
+}
+.org-info dd {
+  margin: 0;
+  font-size: var(--ab-text-sm);
+  line-height: 1.5;
+  color: var(--ab-text-2);
+}
+.super-landing.fr-landing .org-disclaimer {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: var(--ab-text-xs);
+  color: var(--ab-text-3);
+}
+
+@media (max-width: 1100px) {
+  .org-flow {
+    grid-template-columns: 1fr;
+  }
+}
+/* Телефон: вертикальная иерархия карточек вместо координатной схемы. */
+@media (max-width: 640px) {
+  .org-flow {
+    padding: var(--ab-space-3);
+  }
+  .org-stage {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--ab-space-3);
+    min-height: 0;
+    padding: var(--ab-space-2);
+    background-image: none;
+  }
+  .org-links,
+  .org-packet {
+    display: none;
+  }
+  /* Координаты узлов заданы inline-стилем для схемы; на телефоне карточки идут потоком сетки. */
+  .org-node,
+  .org-node.org-l1,
+  .org-node.org-l2 {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: auto;
+    transform: none;
+    animation-name: org-fade;
+  }
+  .org-node:hover {
+    transform: none;
+  }
+  .org-node.org-l1,
+  .org-node.org-l2 {
+    grid-column: 1 / -1;
+  }
+  .org-node.org-l1::after,
+  .org-node.org-l2::after {
+    /* Короткая линия вниз — признак подчинённости на мобильной схеме. */
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -13px;
+    width: 1px;
+    height: 12px;
+    background: var(--ab-border-strong);
+  }
+  .org-node-text b {
+    font-size: var(--ab-text-xs);
+  }
+}
+@keyframes org-fade {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .org-node,
+  .org-links path.is-active {
+    animation: none;
+  }
+  .org-packet {
+    transition: none;
   }
 }

@@ -58,7 +58,7 @@ test("Экран входа показывает отказ сервера бе�
   await expect(page.getByRole("alert")).toContainText("Сервер пока не отвечает");
   await expect(page.locator(".entry-check")).toContainText("Нет ответа");
   await page.getByRole("button",{name:"Открыть описание проекта"}).click();
-  await expect(page.getByRole("heading",{name:"AegisBorder Supper"})).toBeVisible();
+  await expect(page.getByRole("heading",{name:"AegisBorder SuperApp"})).toBeVisible();
 });
 
 test("История защиты, честная загрузка, автоматический город и корпоративный приёмник", async ({ page, context }) => {
@@ -772,7 +772,7 @@ test("SuperApp: публичный лендинг, темы и сохранен�
   });
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: "AegisBorder Supper" }),
+    page.getByRole("heading", { name: "AegisBorder SuperApp" }),
   ).toBeVisible();
   await page.getByRole("button", { name: /Неизвестный USB/ }).click();
   await expect(page.locator(".preview-detail h3")).toHaveText(

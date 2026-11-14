@@ -64,7 +64,7 @@ export function EntryCheck({ children }: { children: ReactNode }) {
           <img src={aegisMark} alt="Aegis" width={64} height={64} />
           <span />
         </div>
-        <span className="experience-kicker">AegisBorder Supperapp</span>
+        <span className="experience-kicker">AegisBorder SuperApp</span>
         <h1>
           Проверяем готовность
           <br />к работе

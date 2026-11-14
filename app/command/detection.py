@@ -8,12 +8,16 @@ from datetime import timedelta, timezone
 from sqlalchemy import select, text
 
 from .models import Alert, Event, Incident, IncidentEvent, Rule
+from .office365 import RULE_IDS as OFFICE365_RULE_IDS
+from .office365 import predicate as office365_predicate
 from .schemas import EventInput
 
 
 # Проверяет признаки одного события. Подсчёт похожих событий во временном окне выполняется отдельно.
 def predicate(rule, event):
     f = event.features
+    if rule.id in OFFICE365_RULE_IDS:
+        return office365_predicate(rule.id, f)
     if rule.id == "night-login":
         hour = f.get(
             "local_hour",

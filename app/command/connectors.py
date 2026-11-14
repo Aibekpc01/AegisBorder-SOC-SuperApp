@@ -17,6 +17,8 @@ from .access import inspect
 from .db import get_db
 from .detection import ingest
 from .models import User, utcnow
+from .office365 import is_unified_audit
+from .office365 import normalize as office365_normalize
 from .rbac import role_base
 from .schemas import EventInput
 from .security import admin, audit, current
@@ -41,10 +43,10 @@ PROVIDERS = [
     },
     {
         "id": "m365",
-        "name": "Microsoft 365 / Office",
-        "purpose": "Действия пользователей в офисных сервисах",
-        "method": "Microsoft Graph / Unified Audit экспорт → агент → API Aegis",
-        "fields": "id, activityDateTime, initiatedBy.user.userPrincipalName, activityDisplayName",
+        "name": "Microsoft 365 / Office 365",
+        "purpose": "Почта Exchange/Outlook, SharePoint, OneDrive, Teams, Entra ID и Purview DLP: письма, архивы, пересылка, внешний доступ",
+        "method": "Office 365 Management Activity API → агент scripts/pull_office365_audit.py → API Aegis",
+        "fields": "Id, CreationTime, Workload, Operation, UserId (единый журнал аудита) или Graph directoryAudits",
     },
     {
         "id": "generic",
@@ -193,6 +195,9 @@ def normalize(provider, raw, connector_id):
                 "type": raw.get("action"),
                 "source": "DLP",
             }
+        elif is_unified_audit(raw):
+            # Единый журнал аудита Office 365: почта, SharePoint, OneDrive, Teams, Entra ID, DLP.
+            data = office365_normalize(raw)
         else:
             # Accept the documented directory audit export shape, not every Graph resource.
             actor = raw.get("initiatedBy") or {}
@@ -208,10 +213,11 @@ def normalize(provider, raw, connector_id):
                 "type": raw.get("type", "office_activity"),
                 "source": "Microsoft 365",
             }
-        data.update(
-            detail=raw.get("detail", raw.get("activityDisplayName", "")),
-            features=raw.get("features", {}),
-        )
+        if not is_unified_audit(raw):
+            data.update(
+                detail=raw.get("detail", raw.get("activityDisplayName", "")),
+                features=raw.get("features", {}),
+            )
         event = EventInput.model_validate(data)
     # Namespacing keeps two independent corporate systems' IDs separate.
     return event.model_copy(

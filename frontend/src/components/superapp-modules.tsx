@@ -18,7 +18,6 @@ import {
   RotateCcw,
   Trash2,
 } from "lucide-react";
-import { EventTable } from "./event-table";
 import { FriendlyEventBuilder } from "./friendly-event-builder";
 import { eventChoices } from "../lib/explainers";
 import { date } from "../lib/utils";
@@ -26,6 +25,7 @@ import "../modules.css";
 import { AcademyHub, TeamProject } from "./project-experience";
 import { InfrastructureScene, DigitalCore } from "./ultra-visuals";
 import { CorporateIntegrations } from "./corporate-integrations";
+import { Office365Monitor } from "./office365-monitor";
 import { SecurityAnalytics } from "./supper-experience";
 
 type User = { id: number; role: string };
@@ -157,46 +157,10 @@ export function SuperappModules({ page, user }: { page: string; user: User }) {
 }
 
 function M365() {
-  type Monitor = {
-    connected: boolean;
-    events: (EventInput & { id: number; severity: string })[];
-    accounts: number;
-    devices: number;
-    types: Record<string, number>;
-  };
-  const monitor = useQuery({
-    queryKey: ["superapp-m365"],
-    queryFn: () => api<Monitor>(base + "/m365"),
-  });
+  // Мониторинг Office 365 вынесен в отдельный компонент: почта, файлы, Teams, Entra ID и DLP.
   return (
-    <Surface error={monitor.error}>
-      <h2>Microsoft 365: учебный мониторинг</h2>
-      <p>
-        Онлайн-подключение не настроено. Показаны последние 500 доступных
-        импортированных событий с источником Microsoft 365, M365 или
-        Microsoft365. Происхождение записей не проверяется; это локальный
-        учебный контур.
-      </p>
-      <Link className="btn btn-outline" to="/app/integrations">
-        Импортировать учебные события
-      </Link>
-      {monitor.isPending && <p role="status">Загрузка событий…</p>}
-      {monitor.data && (
-        <>
-          <p>
-            Событий: {monitor.data.events.length} · учётных записей:{" "}
-            {monitor.data.accounts} · устройств: {monitor.data.devices}
-          </p>
-          <div className="row wrap">
-            {Object.entries(monitor.data.types).map(([type, count]) => (
-              <span className="badge" key={type}>
-                {type}: {count}
-              </span>
-            ))}
-          </div>
-          <EventTable items={monitor.data.events} technical />
-        </>
-      )}
+    <Surface>
+      <Office365Monitor />
     </Surface>
   );
 }

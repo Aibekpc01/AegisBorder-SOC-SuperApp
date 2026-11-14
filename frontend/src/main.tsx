@@ -54,7 +54,7 @@ function SiteEntry() {
     <Suspense
       fallback={
         <div className="login">
-          <p role="status">Загрузка AegisBorder Supperapp…</p>
+          <p role="status">Загрузка AegisBorder SuperApp…</p>
         </div>
       }
     >

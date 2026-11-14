@@ -5,10 +5,11 @@
  * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
  */
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Activity,
+  Archive,
   ArrowDown,
   ArrowRight,
   BookOpen,
@@ -17,15 +18,19 @@ import {
   Cpu,
   DatabaseZap,
   FileCheck2,
+  FileX2,
   Fingerprint,
   FlaskConical,
   GraduationCap,
   KeyRound,
   Layers,
   LockKeyhole,
+  Mail,
+  MoonStar,
   Network,
   Play,
   ScrollText,
+  Send,
   ServerCog,
   ShieldCheck,
   Sparkles,
@@ -43,16 +48,19 @@ import { useScrollReveal } from "../lib/use-scroll-reveal";
 import { OverviewShowcase } from "./project-experience";
 import { FrontierScene } from "./landing/frontier-scene";
 import { SignalPipeline } from "./landing/signal-pipeline";
+import { OrgWorkflow } from "./landing/org-workflow";
 import "../styles/landing.css";
 
+/** Учебные примеры. Пороги и риск совпадают с правилами в app/command/scenarios.py и office365.py. */
 const examples = [
   {
+    group: "Рабочие станции и сеть",
     title: "Подозрительные входы",
     Icon: Fingerprint,
     subtitle: "Пять неудачных попыток за минуту",
     rule: "≥ 5 ошибок входа / 60 секунд",
-    risk: 70,
-    text: "Алгоритм объединяет попытки одной учётной записи в заданном временном окне. Оператор проверяет причину и принимает решение.",
+    risk: 65,
+    text: "Алгоритм объединяет попытки одной учётной записи в заданном временном окне. Если после ошибок вход удался, риск растёт на 15 пунктов. Оператор проверяет причину и принимает решение.",
     events: [
       "08:14:02 · Учебная попытка входа отклонена",
       "08:14:17 · Повторная ошибка авторизации",
@@ -61,11 +69,12 @@ const examples = [
     route: "bruteforce",
   },
   {
+    group: "Рабочие станции и сеть",
     title: "Неизвестный USB",
     Icon: Usb,
     subtitle: "Подключение неразрешённого устройства",
     rule: "Устройство отсутствует в разрешённом списке",
-    risk: 75,
+    risk: 60,
     text: "Событие содержит признак разрешённости USB. Неизвестное устройство создаёт инцидент; разрешённое не вызывает это правило.",
     events: [
       "09:20:01 · Получено событие подключения",
@@ -75,11 +84,12 @@ const examples = [
     route: "usb",
   },
   {
+    group: "Рабочие станции и сеть",
     title: "Массовое копирование",
     Icon: Layers,
     subtitle: "Необычный объём обращений к файлам",
-    rule: "Объём копирования превышает порог правила",
-    risk: 80,
+    rule: "≥ 3 операций и ≥ 500 файлов / 60 секунд",
+    risk: 75,
     text: "Анализируется объём синтетической операции. В рабочем полигоне доступны доказательства, рекомендации и отчёт по фактическим данным.",
     events: [
       "10:03:01 · Учебная операция копирования",
@@ -88,8 +98,97 @@ const examples = [
     ],
     route: "mass_copy",
   },
+  {
+    group: "Рабочие станции и сеть",
+    title: "Вход ночью",
+    Icon: MoonStar,
+    subtitle: "Успешный вход вне рабочего времени",
+    rule: "Вход вне 08:00–20:00 по времени UTC+5",
+    risk: 55,
+    text: "Сам по себе ночной вход не нарушение — система лишь просит проверить, был ли он запланирован. Объяснение показывает точное время и учебный график.",
+    events: [
+      "02:14:09 · Успешный вход учётной записи",
+      "02:14:09 · Время вне учебного графика",
+      "02:14:10 · Создано предупреждение для проверки",
+    ],
+    route: "night-login",
+  },
+  {
+    group: "Рабочие станции и сеть",
+    title: "Удаление журналов",
+    Icon: FileX2,
+    subtitle: "Стёрт журнал авторизации",
+    rule: "Удаление журнала событий — сразу инцидент",
+    risk: 90,
+    text: "Удаление журналов часто скрывает следы. Правило срабатывает с первого события и получает высокий риск, чтобы оператор увидел его первым.",
+    events: [
+      "23:41:55 · Учебная команда очистки журнала",
+      "23:41:55 · Журнал авторизации удалён",
+      "23:41:56 · Инцидент критического уровня",
+    ],
+    route: "logs",
+  },
+  {
+    group: "Рабочие станции и сеть",
+    title: "Повышение прав",
+    Icon: UserCog,
+    subtitle: "Роль администратора без согласования",
+    rule: "Новая роль admin и нет отметки согласования",
+    risk: 90,
+    text: "Если права выданы по заявке, правило молчит. Без согласования система создаёт инцидент и показывает, кто и кому изменил роль.",
+    events: [
+      "11:05:12 · Изменена роль учётной записи",
+      "11:05:12 · Новая роль: администратор",
+      "11:05:12 · Согласование не найдено",
+    ],
+    route: "privileges",
+  },
+  {
+    group: "Office 365",
+    title: "Пересылка почты наружу",
+    Icon: Mail,
+    subtitle: "Правило Outlook пересылает письма",
+    rule: "ForwardTo / RedirectTo → внешний домен",
+    risk: 80,
+    text: "Скрытое правило пересылки — частый способ утечки переписки. Пересылка коллеге внутри организации не вызывает инцидент; на внешний домен — вызывает.",
+    events: [
+      "14:22:30 · Exchange: создано правило входящих",
+      "14:22:30 · Адрес пересылки во внешнем домене",
+      "14:22:31 · Инцидент «Пересылка почты за пределы организации»",
+    ],
+    route: "o365-mail-forward",
+  },
+  {
+    group: "Office 365",
+    title: "Архивы из OneDrive",
+    Icon: Archive,
+    subtitle: "Пять архивов скачано за 10 минут",
+    rule: "≥ 5 архивов (.zip, .rar, .7z, .pst) / 10 минут",
+    risk: 75,
+    text: "Одиночная загрузка архива — обычная работа. Серия архивов за короткое время похожа на вынос данных; журнал аудита показывает каждый файл.",
+    events: [
+      "16:01:04 · OneDrive: скачан отчёт.zip",
+      "16:06:40 · Скачан пятый архив за 10 минут",
+      "16:06:41 · Инцидент «Массовая загрузка архивов»",
+    ],
+    route: "o365-archive-download",
+  },
+  {
+    group: "Office 365",
+    title: "Архив отправлен наружу",
+    Icon: Send,
+    subtitle: "Письмо с .zip внешнему адресату",
+    rule: "Вложение-архив + внешний получатель",
+    risk: 75,
+    text: "Письмо коллеге с архивом допустимо. То же письмо на внешний адрес создаёт инцидент. Тема и текст письма не сохраняются — только факт и тип вложения.",
+    events: [
+      "17:30:12 · Outlook: письмо отправлено",
+      "17:30:12 · Вложение: архив .zip",
+      "17:30:13 · Получатель вне организации",
+    ],
+    route: "o365-mail-archive-out",
+  },
 ];
-
 const capabilities = [
   {
     Icon: Activity,
@@ -232,6 +331,7 @@ export function Landing() {
           <a href="#capabilities">Возможности</a>
           <a href="#practice">Полигон</a>
           <a href="#workflow">Как это работает</a>
+          <a href="#structure">Структура</a>
           <a href="#reliability">Надёжность</a>
           <Link to="/app/team">Чат</Link>
         </nav>
@@ -267,7 +367,7 @@ export function Landing() {
               </p>
               <div className="hero-actions">
                 <Link className="btn btn-primary fr-btn-lg" to="/app">
-                  Открыть Supperapp <ArrowRight size={17} />
+                  Открыть SuperApp <ArrowRight size={17} />
                 </Link>
                 <Link className="btn btn-outline fr-btn-lg" to="/app/commission">
                   <Play size={16} /> Запустить демонстрацию
@@ -358,10 +458,13 @@ export function Landing() {
           </div>
           <div className="preview-console">
             <aside>
-              <span className="preview-overline">УЧЕБНЫЙ ПРИМЕР</span>
+              <span className="preview-overline">УЧЕБНЫЕ ПРИМЕРЫ · {examples.length}</span>
               {examples.map((item, i) => (
+                <Fragment key={item.route}>
+                {(i === 0 || examples[i - 1].group !== item.group) && (
+                  <span className="preview-group">{item.group}</span>
+                )}
                 <button
-                  key={item.title}
                   className={example === i ? "active" : ""}
                   aria-pressed={example === i}
                   onClick={() => setExample(i)}
@@ -373,6 +476,7 @@ export function Landing() {
                   </span>
                   <ChevronRight size={14} />
                 </button>
+                </Fragment>
               ))}
               <p>
                 Этот просмотр не выполняет серверных действий и не показывает
@@ -464,6 +568,25 @@ export function Landing() {
           </div>
         </section>
 
+        <section id="structure" className="fr-structure" aria-labelledby="fr-structure-title">
+          <div className="landing-section-heading">
+            <div>
+              <span className="landing-kicker">ОДНА СИСТЕМА ДЛЯ ВСЕХ УРОВНЕЙ</span>
+              <h2 id="fr-structure-title">
+                Каждое подразделение —
+                <br />
+                в общем цифровом контуре.
+              </h2>
+            </div>
+            <p>
+              У каждого уровня своё рабочее пространство, а заявки и документы
+              переходят между уровнями по правам доступа. Нажмите «Посмотреть,
+              как работает» или выберите подразделение.
+            </p>
+          </div>
+          <OrgWorkflow />
+        </section>
+
         <section className="fr-value" aria-labelledby="fr-value-title">
           <div className="landing-section-heading">
             <div>
@@ -474,7 +597,7 @@ export function Landing() {
               </h2>
             </div>
             <p>
-              Supperapp сокращает путь от сигнала до решения и делает каждый шаг
+              SuperApp сокращает путь от сигнала до решения и делает каждый шаг
               проверяемым: для того, кто ведёт расследование, кто за него
               отвечает и кто только учится.
             </p>
@@ -548,7 +671,8 @@ export function Landing() {
                   "Почтовая безопасность и цифровой двойник",
                   "Протестировано локально",
                 ],
-                ["Приём событий Kaspersky / DLP / Microsoft 365", "API-приёмник"],
+                ["Office 365: почта, архивы, SharePoint, OneDrive, Teams, DLP", "Агент журнала аудита"],
+                ["Приём событий Kaspersky / DLP", "API-приёмник"],
               ].map(([title, status]) => (
                 <div key={title}>
                   <span className="online-dot" />

@@ -1,4 +1,4 @@
-# Продолжение AegisBorder Supper — 15 октября 2026
+# Продолжение AegisBorder SuperApp — 15 октября 2026
 
 Контекст восстановлен по Git (`4af2171`), `aegis-ultra-review.md`,
 `supper-identity-release.md` и плану релиза. Другие чаты в этой сессии недоступны.

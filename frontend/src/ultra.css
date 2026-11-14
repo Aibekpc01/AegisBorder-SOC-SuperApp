@@ -2,7 +2,7 @@
  * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
  */
 
-/* AegisBorder Supperapp — shared visual contract. All visualizations use API data. */
+/* AegisBorder SuperApp — shared visual contract. All visualizations use API data. */
 :root,
 :root[data-theme="dark"] {
   --ultra-bg: #0b1424;

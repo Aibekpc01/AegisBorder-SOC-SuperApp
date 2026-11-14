@@ -1,4 +1,4 @@
-# Архитектура AegisBorder Supperapp
+# Архитектура AegisBorder SuperApp
 
 ## 1. Общая схема
 

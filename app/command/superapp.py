@@ -9,7 +9,7 @@ import io
 import json
 import re
 from collections import Counter
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from typing import Literal
 from urllib.parse import urlsplit
 
@@ -32,11 +32,13 @@ from .models import (
     UserProfile,
     utcnow,
 )
+from .office365 import RULE_IDS as OFFICE365_RULE_IDS
+from .office365 import WORKLOADS, workload_of
 from .rbac import is_admin, role_base
 from .schemas import EventInput
 from .security import admin, audit, current, operator, visible
 from .serialization import record
-from .superapp_models import ModuleRecord, TeamMessage, WorkTask
+from .superapp_models import Connector, ModuleRecord, TeamMessage, WorkTask
 
 router = APIRouter(prefix="/api/v1/superapp", tags=["superapp"])
 
@@ -399,13 +401,30 @@ def m365(user=Depends(current), db=Depends(get_db)):
         .order_by(Event.time.desc())
         .limit(500)
     ).all()
+    # «Подключено» — есть включённый приёмник Office 365, получавший события за последние 15 минут.
+    receivers = db.scalars(select(Connector).where(Connector.provider == "m365", Connector.enabled.is_(True))).all()
+    last = max((r.received_at for r in receivers if r.received_at), default=None)
+    if last and last.tzinfo is None:
+        last = last.replace(tzinfo=timezone.utc)
+    connected = bool(last and datetime.now(timezone.utc) - last <= timedelta(minutes=15))
+    rules = db.scalars(select(Rule).where(Rule.id.in_(OFFICE365_RULE_IDS)).order_by(Rule.risk.desc())).all()
     return {
-        "connected": False,
-        "mode": "imported-synthetic",
+        "connected": connected,
+        "mode": "live" if connected else "imported-synthetic",
+        "last_received": last.isoformat() if last else None,
+        "receivers": len(receivers),
         "events": [record(e) for e in events],
         "accounts": len({e.account for e in events}),
         "devices": len({e.device for e in events}),
         "types": dict(Counter(e.type for e in events)),
+        "workloads": [
+            {"id": key, "label": label, "events": sum(1 for e in events if workload_of(e) == key)}
+            for key, label in WORKLOADS.items()
+        ],
+        "rules": [
+            {"id": r.id, "name": r.name, "description": r.description, "risk": r.risk, "enabled": r.enabled}
+            for r in rules
+        ],
     }
 
 

@@ -523,7 +523,7 @@ const extraNames: Record<string, string> = {
   settings: "Настройки",
   help: "Справка и обучение",
   commission: "Демонстрация проекта",
-  development: "Развитие Supperapp",
+  development: "Развитие SuperApp",
   "scenario-builder": "Конструктор сценариев",
   team: "Чат",
 };

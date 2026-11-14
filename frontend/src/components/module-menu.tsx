@@ -29,7 +29,7 @@ export function ModuleMenu({ compact = false }: { compact?: boolean }) {
         </span>
       </button>
       <Dialog
-        title="Модули AegisBorder Supperapp"
+        title="Модули AegisBorder SuperApp"
         open={open}
         onClose={() => setOpen(false)}
       >

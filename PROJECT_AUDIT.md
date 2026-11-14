@@ -1,4 +1,4 @@
-# PROJECT_AUDIT — AegisBorder Supperapp
+# PROJECT_AUDIT — AegisBorder SuperApp
 
 Дата аудита: 14.11.2026 · Ветка: `feat/elite-redesign` · Точка отката: коммит `0628286`
 («checkpoint working state before elite redesign»).
@@ -113,7 +113,7 @@ React: main.tsx ─► "/" → Landing (лениво)
 ### 6.5. Прочее
 
 - В `app/web/assets/` копятся старые сборки (десятки файлов, вложенная `app/web/web/`). Каталог в `.gitignore`, на работу не влияет, но раздувает локальный архив релиза.
-- Название бренда пишется «**Supperapp**» (20 файлов). По-английски *supper* — «ужин»; вероятно, задумано «SuperApp». Без согласования не меняю.
+- Название бренда пишется «**SuperApp**» (20 файлов). По-английски *supper* — «ужин»; вероятно, задумано «SuperApp». Без согласования не меняю.
 
 ## 7. План работ (минимальный риск регрессий)
 

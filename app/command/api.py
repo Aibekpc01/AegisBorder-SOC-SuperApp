@@ -55,6 +55,7 @@ from .models import (
     WorkspaceDocument,
     utcnow,
 )
+from .office365 import OFFICE365_RULES
 from .reports import pdf
 from .scenarios import RULES, catalog, generate
 from .schemas import (
@@ -132,7 +133,7 @@ async def lifespan(app):
             db.add(user)
             db.flush()
             audit(db, user.id, "Создан администратор Command Center")
-        for sid, name, kind, threshold, window, risk, description in RULES:
+        for sid, name, kind, threshold, window, risk, description in [*RULES, *OFFICE365_RULES]:
             if sid == "complex":
                 continue
             if not db.get(Rule, sid):
@@ -159,7 +160,7 @@ async def lifespan(app):
     yield
 
 
-app = FastAPI(title="AegisBorder Supperapp — расследование киберинцидентов и защита информации", version=VERSION, lifespan=lifespan)
+app = FastAPI(title="AegisBorder SuperApp — расследование киберинцидентов и защита информации", version=VERSION, lifespan=lifespan)
 app.add_middleware(StaticCompression)
 app.include_router(profile_router)
 app.include_router(workspace_router)
@@ -938,7 +939,7 @@ def audit_list(user=Depends(current), db=Depends(get_db)):
 @app.get("/api/v1/settings")
 def settings(user=Depends(current), db=Depends(get_db)):
     row = db.get(Setting, "system")
-    return row.value if row else {"organization": "AegisBorder Supperapp", "simple_mode": True}
+    return row.value if row else {"organization": "AegisBorder SuperApp", "simple_mode": True}
 
 
 @app.put("/api/v1/settings")

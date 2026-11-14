@@ -96,13 +96,13 @@ export const modules = [
   },
   {
     id: 8,
-    name: "Microsoft 365 Monitor",
+    name: "Безопасность Office 365",
     path: "m365",
     group: "Интеграции",
     Icon: Building2,
     status: "Протестирован локально",
     description:
-      "Мониторинг импортированных учебных событий; онлайн-адаптер Microsoft Graph не подключён.",
+      "Почта Outlook, архивы в SharePoint и OneDrive, Teams, входы Entra ID и DLP: 10 правил и агент журнала аудита. Подключение к реальному тенанту требует регистрации приложения в Microsoft.",
   },
   {
     id: 9,
@@ -257,7 +257,7 @@ export const platformNavigation = [
   },
   {
     id: 23,
-    name: "Развитие Supperapp",
+    name: "Развитие SuperApp",
     group: "Обучение",
     Icon: Presentation,
     path: "development",

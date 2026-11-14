@@ -2,6 +2,6 @@
  * Карта проекта: SOURCE_GUIDE.md; обзор папки: FOLDER_GUIDE.md.
  */
 
-export const BRAND_NAME = "AegisBorder Supperapp";
+export const BRAND_NAME = "AegisBorder SuperApp";
 export const BRAND_TAGLINE =
   "Цифровое суперприложение для расследования киберинцидентов и защиты информации в Пограничной службе КНБ РК";

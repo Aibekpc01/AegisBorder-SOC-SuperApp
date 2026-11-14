@@ -39,7 +39,7 @@ def parse_feed(data):
 
 
 def fetch_feed():
-    request = Request(FEED, headers={"User-Agent": "AegisBorder-Supperapp/0.3"})
+    request = Request(FEED, headers={"User-Agent": "AegisBorder-SuperApp/0.3"})
     with urlopen(request, timeout=6) as response:
         return parse_feed(response.read(2_000_001))
 

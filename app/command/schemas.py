@@ -134,6 +134,7 @@ class EventInput(BaseModel):
             "baseline",
             "connections",
             "attempts",
+            "items",
         ):
             if key in value and (
                 isinstance(value[key], bool)
@@ -141,7 +142,7 @@ class EventInput(BaseModel):
                 or not 0 <= value[key] <= 1_000_000
             ):
                 raise ValueError(f"Признак {key} должен быть неотрицательным числом")
-        for key in ("restricted", "approved", "critical", "unusual", "protection_enabled"):
+        for key in ("restricted", "approved", "critical", "unusual", "protection_enabled", "external", "archive"):
             if key in value and not isinstance(value[key], bool):
                 raise ValueError(f"Признак {key} должен быть логическим значением")
         if "local_hour" in value and not 0 <= value["local_hour"] < 24:

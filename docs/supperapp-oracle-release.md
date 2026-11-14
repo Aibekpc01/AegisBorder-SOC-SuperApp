@@ -1,4 +1,4 @@
-# AegisBorder Supperapp — публикация на Oracle
+# AegisBorder SuperApp — публикация на Oracle
 
 15 октября 2026 года. Выполнено по прямому запросу владельца опубликовать
 обновление и запустить сервисы на Oracle.
@@ -77,7 +77,7 @@ PostgreSQL не опубликован в Интернет, приложение
 Предыдущее обновление интерфейса сохранено как
 `aegisborder-supperapp:rollback-20261015-r3.1` (версия r3).
 Исходный образ до всей публикации —
-`aegisborder-supperapp:rollback-20261015-r3` (прежняя версия Supper r2).
+`aegisborder-supperapp:rollback-20261015-r3` (прежняя версия SuperApp r2).
 
 Для возврата к r3 из рабочего каталога восстановить только Compose и контейнер:
 
