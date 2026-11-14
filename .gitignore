@@ -49,3 +49,6 @@ id_ed25519
 *.7z
 *.dump
 backups/
+# Скриншоты и сборка ролика (пересоздаются скриптами)
+presentation/shots/
+presentation/build/
